@@ -1,0 +1,108 @@
+:root {
+  color-scheme: dark;
+  --bg: #11151c;
+  --panel: #1b212b;
+  --text: #e8ecf1;
+  --muted: #8b95a5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, "Segoe UI", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #262e3a;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+}
+
+.status {
+  font-size: 0.9rem;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.status.ok { color: #7bd88f; }
+.status.warn { color: #e0b24a; }
+
+main#stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 24px;
+  align-content: start;
+}
+
+.channel-tile {
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 20px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 2px solid transparent;
+  transition: border-color 60ms linear, box-shadow 60ms linear;
+}
+
+.channel-tile .label {
+  font-weight: 600;
+}
+
+.channel-tile .type {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.channel-tile .note {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  align-self: flex-end;
+}
+
+/* .active viene aggiunta/rimossa via JS a ogni nota — e' il feedback visivo immediato per il paziente */
+.channel-tile.active {
+  border-color: var(--tile-color, #fff);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--tile-color, #fff) 25%, transparent);
+}
+
+footer {
+  padding: 16px 24px;
+  border-top: 1px solid #262e3a;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+footer p { margin: 4px 0; }
+kbd {
+  background: #2a3240;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: inherit;
+}
+.hint code {
+  background: #2a3240;
+  border-radius: 4px;
+  padding: 1px 6px;
+}

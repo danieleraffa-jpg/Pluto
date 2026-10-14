@@ -1,7 +1,11 @@
 # Software
 
-Nuova applicazione da sviluppare per sostituire il software originale di Pluto (non recuperabile).
+Applicazione per sostituire il software originale di Pluto (non recuperabile).
 
-Funzione prevista: ricevere i dati dai sensori (via eobody III e/o scheda custom) e generare/controllare musica in risposta al movimento, replicando l'interazione di gruppo del laboratorio PLUTO-Soundbeam originale.
+Funzione: ricevere i dati dai sensori (via eobody III e/o scheda custom) e generare/controllare musica in risposta al movimento, replicando l'interazione di gruppo del laboratorio PLUTO-Soundbeam originale.
 
-Stack tecnico e architettura ancora da definire — dipendono da cosa emerge dal recupero hardware e dai chiarimenti su cosa faceva il sistema originale (vedi [`docs/research.md`](../docs/research.md)).
+## [`pluto-runtime/`](pluto-runtime/)
+
+Primo prototipo funzionante: app web (HTML/JS, Web MIDI + Web Audio) pensata per essere usata dagli educatori durante le sessioni — bassa latenza, nessuna installazione complessa. Testabile subito da tastiera, senza hardware collegato. Vedi il suo [README](pluto-runtime/README.md) per come usarlo e [`../docs/proposta-architettura.md`](../docs/proposta-architettura.md) per il perché di questa scelta tecnica.
+
+Non ancora presente: uno strumento di preparazione del repertorio/suoni per il musicista (resterà probabilmente su un DAW esistente, vedi la proposta di architettura).
