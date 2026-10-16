@@ -13,12 +13,13 @@ Interfaccia USB/MIDI commerciale (Eowave, Francia). 16 ingressi jack per sensori
 
 Il dispositivo arrivato a Daniele era senza alcun cavo (nemmeno di alimentazione). Buona notizia trovata via ricerca: l'eobody III è descritto come **"auto-powered" via USB** — collegato a un PC non serve un alimentatore separato, basta un cavo USB dati. L'alimentazione 5V esterna è un'opzione pensata solo per l'uso standalone (senza PC, per pilotare direttamente un sintetizzatore hardware via MIDI out), non per il nostro caso d'uso.
 
-Resta da confermare **il tipo di connettore USB sul dispositivo** (USB-B, Mini-USB o Micro-USB) — non è chiaro dalla documentazione online per questo modello specifico. Daniele sta controllando direttamente sul dispositivo.
+**Risolto (16/10/2026)**: Daniele ha trovato il cavo USB giusto e collegato l'eobody III al PC. Confermato riconosciuto sia da Windows (appare come dispositivo "eobody_core", VID 0x0666 = Eowave, con MIDI endpoint attivo) sia da [`software/pluto-runtime`](../../software/pluto-runtime/) via Web MIDI — nello stato dell'app compare "MIDI: eobody_core" in verde. Tutta la catena USB → Windows → Web MIDI → app funziona.
 
 ## Da fare
 
-- [ ] Confermare il tipo di connettore USB sul lato del dispositivo e procurarsi il cavo giusto (probabilmente basta quello, niente alimentatore separato)
+- [x] Procurarsi il cavo USB giusto — risolto, era "auto-powered", non serve alimentatore separato
+- [x] Testare il collegamento USB e verificare che il dispositivo sia riconosciuto come device MIDI — confermato sia da Windows che da pluto-runtime
 - [ ] Trovare/leggere il numero di serie sul dispositivo e registrarlo su eowave.com per accedere a editor, manuale e patch ufficiali — serve anche per confermare dimensione jack sensori (6.35mm o 3.5mm) e se a1-a8/b1-b8 si comportano in modo diverso
+- [ ] Collegare un sensore di prova a uno dei jack e verificare che generi messaggi MIDI visibili in pluto-runtime (il riquadro del canale corrispondente dovrebbe illuminarsi)
 - [ ] Elencare i sensori fisicamente collegati (tipo, canale a/b, numero)
-- [ ] Testare il collegamento USB e verificare che il dispositivo sia riconosciuto come device MIDI (anche da [`software/pluto-runtime`](../../software/pluto-runtime/), che lo rileverà automaticamente via Web MIDI)
 - [ ] Documentare qui la configurazione (mapping sensore → parametro MIDI) una volta recuperata o ricreata
