@@ -15,8 +15,17 @@
 
   <main id="stage">
     <!-- Un riquadro per ogni canale configurato: si illumina quando l'oggetto fisico viene attivato.
-         Pensato come primo feedback visivo per il paziente/l'educatore; i colori vengono da config/mapping.json -->
+         Pensato come primo feedback visivo per il paziente/l'educatore; i colori vengono da config/mapping.js -->
   </main>
+
+  <section id="midiMonitor">
+    <h2>Monitor MIDI grezzo</h2>
+    <p class="hint">
+      Mostra ogni messaggio ricevuto, anche su canali non ancora configurati in <code>config/mapping.js</code>.
+      Serve a scoprire su quale canale/numero manda davvero un jack dell'eobody collegandoci un sensore.
+    </p>
+    <div id="midiLog"></div>
+  </section>
 
   <footer>
     <p>

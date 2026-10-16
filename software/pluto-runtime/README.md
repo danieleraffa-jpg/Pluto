@@ -9,7 +9,8 @@ Una pagina web (HTML/JS, nessuna build necessaria) che:
 - per i canali **raggio** trasforma un valore continuo (Control Change) in una nota scelta da una scala — lo stesso principio "posizione → nota da una sequenza" del Soundbeam originale (vedi [`docs/soundbeam-tecnico.md`](../../docs/soundbeam-tecnico.md)), **non** un controllo continuo puro;
 - per i canali **tavoletta** suona una nota fissa a ogni pressione (on/off);
 - suona con un sintetizzatore interno via Web Audio — **non servono ancora file audio**: i suoni veri li sceglierà il musicista in un secondo momento, qui servono solo a verificare che il sistema risponda;
-- mostra un feedback visivo immediato (il riquadro del canale si illumina) — utile sia per testare sia come base per il feedback al paziente.
+- mostra un feedback visivo immediato (il riquadro del canale si illumina) — utile sia per testare sia come base per il feedback al paziente;
+- ha un **monitor MIDI grezzo** in fondo alla pagina: mostra ogni messaggio ricevuto (canale, tipo, valori) anche se non è ancora configurato in `config/mapping.js`. Serve a scoprire su quale canale/numero manda davvero un jack dell'eobody collegandoci un sensore, invece di doverlo indovinare.
 
 ## Come si usa adesso (senza hardware)
 

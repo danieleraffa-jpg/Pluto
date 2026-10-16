@@ -87,6 +87,40 @@ main#stage {
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--tile-color, #fff) 25%, transparent);
 }
 
+#midiMonitor {
+  margin: 0 24px 24px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border-radius: 12px;
+}
+
+#midiMonitor h2 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+#midiLog {
+  margin-top: 10px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-family: "Consolas", "SF Mono", monospace;
+  font-size: 0.82rem;
+  color: #c3cad6;
+  background: #11151c;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+#midiLog div {
+  padding: 1px 0;
+  white-space: nowrap;
+}
+
+#midiLog:empty::before {
+  content: "In attesa di messaggi MIDI…";
+  color: var(--muted);
+}
+
 footer {
   padding: 16px 24px;
   border-top: 1px solid #262e3a;

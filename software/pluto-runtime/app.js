@@ -168,12 +168,34 @@
     statusEl.className = "status" + (kind ? " " + kind : "");
   }
 
+  // -----------------------------------------------------------------------
+  // Monitor MIDI grezzo: mostra OGNI messaggio in arrivo, indipendentemente
+  // dalla mappatura in config/mapping.js. Serve a scoprire su quale canale/
+  // numero manda davvero un jack dell'eobody quando ci si collega un
+  // sensore, senza doverlo indovinare.
+  // -----------------------------------------------------------------------
+
+  const midiLogEl = document.getElementById("midiLog");
+  const COMMAND_NAMES = { 0x90: "Note On", 0x80: "Note Off", 0xb0: "Control Change" };
+
+  function logMidiMessage(channel, command, data1, data2) {
+    if (!midiLogEl) return;
+    const name = COMMAND_NAMES[command] || `0x${command.toString(16)}`;
+    const line = document.createElement("div");
+    line.textContent = `canale ${channel} · ${name} · dato1=${data1} dato2=${data2}`;
+    midiLogEl.prepend(line);
+    while (midiLogEl.children.length > 30) midiLogEl.removeChild(midiLogEl.lastChild);
+  }
+
   function onMidiMessage(event) {
     const [statusByte, data1, data2] = event.data;
     const command = statusByte & 0xf0;
     const channel = (statusByte & 0x0f) + 1; // i canali MIDI vanno da 1 a 16
+
+    logMidiMessage(channel, command, data1, data2); // sempre, anche se il canale non e' ancora mappato
+
     const cfg = MAPPING.channels[channel];
-    if (!cfg) return; // canale non mappato: lo ignoriamo
+    if (!cfg) return; // canale non (ancora) mappato in config/mapping.js: nessun suono, ma resta visibile nel monitor qui sopra
 
     if (command === 0x90 && data2 > 0) {
       // Note On diretto (es. un sensore gia' configurato per mandare note dirette)
