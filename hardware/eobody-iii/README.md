@@ -1,12 +1,12 @@
 # Eowave eobody III Sensorbox
 
-Interfaccia USB/MIDI commerciale (Eowave, Francia). 16 ingressi jack per sensori analogici, etichettati a1-a8 e b1-b8 sul pannello frontale.
+Interfaccia USB/MIDI commerciale (Eowave, Francia). Etichette sul pannello frontale a1-a8 e b1-b8 (16 posizioni), ma a un controllo visivo diretto (16/10/2026) si vedono 6 jack fisici per lato (12 in tutto) — **conteggio da riverificare con una foto ravvicinata**, Eowave produce varianti da 8 a 16 ingressi quindi potrebbe essere normale per questo esemplare.
 
-## Specifiche ingressi sensore (da ricerca web, 14/10/2026 — da confermare sul dispositivo fisico)
+## Specifiche ingressi sensore
 
-- Ingressi **analogici 0-5V**, 12-bit di risoluzione, 32-bit di elaborazione interna.
+- Ingressi **analogici 0-5V**, 12-bit di risoluzione, 32-bit di elaborazione interna (da ricerca web, 14/10/2026).
 - Connettore **jack TRS**: punta = segnale, anello = alimentazione 5V, calza = massa — stesso standard di tutta la linea sensori Eowave.
-- Formato jack: 6.35mm (1/4") sui modelli Sensorbox più recenti, 3.5mm su modelli precedenti — **da verificare quale misura ha il nostro esemplare**.
+- **Formato jack confermato (16/10/2026): 6.35mm (1/4"), il formato "grande"** — a occhio sul pannello fisico, non il mini-jack da 3.5mm.
 - Alimentazione 5V disponibile direttamente sull'anello del jack: un sensore resistivo semplice (FSR, flex sensor, potenziometro) funziona collegato come **partitore di tensione**, senza bisogno di elettronica aggiuntiva.
 
 ## Cavi (14/10/2026)
@@ -19,7 +19,9 @@ Il dispositivo arrivato a Daniele era senza alcun cavo (nemmeno di alimentazione
 
 - [x] Procurarsi il cavo USB giusto — risolto, era "auto-powered", non serve alimentatore separato
 - [x] Testare il collegamento USB e verificare che il dispositivo sia riconosciuto come device MIDI — confermato sia da Windows che da pluto-runtime
-- [ ] Trovare/leggere il numero di serie sul dispositivo e registrarlo su eowave.com per accedere a editor, manuale e patch ufficiali — serve anche per confermare dimensione jack sensori (6.35mm o 3.5mm) e se a1-a8/b1-b8 si comportano in modo diverso
-- [ ] Collegare un sensore di prova a uno dei jack e verificare che generi messaggi MIDI visibili in pluto-runtime (il riquadro del canale corrispondente dovrebbe illuminarsi)
+- [ ] Fotografare da vicino il pannello sensori e contare con certezza quanti jack fisici ci sono davvero (6+6=12 a vista, ma le etichette suggeriscono 16) — aggiornare questa pagina col numero giusto
+- [ ] Trovare/leggere il numero di serie sul dispositivo e registrarlo su eowave.com per accedere a editor, manuale e patch ufficiali
+- [ ] Procurarsi un cavo jack 6.35mm (1/4") per il primo test di segnale — anche un cavo economico va bene, anche tagliato da un lato per un test grezzo (vedi [`../raggi/README.md`](../raggi/README.md))
+- [ ] Collegare un sensore di prova (o un pedale volume/espressione, o un cavo con i fili nudi toccati insieme) a uno dei jack e verificare che generi messaggi MIDI visibili in pluto-runtime (il riquadro del canale corrispondente dovrebbe illuminarsi)
 - [ ] Elencare i sensori fisicamente collegati (tipo, canale a/b, numero)
 - [ ] Documentare qui la configurazione (mapping sensore → parametro MIDI) una volta recuperata o ricreata
