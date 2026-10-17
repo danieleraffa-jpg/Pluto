@@ -10,10 +10,17 @@ A differenza dei raggi, per un semplice interruttore on/off esistono già **puls
 
 Gli switch accessibili standard (Jelly Bean, AbleNet) usano un **jack mono da 3.5mm**, lo standard di tutto il settore della tecnologia assistiva. L'eobody III ha jack da **6.35mm** (vedi [`../eobody-iii/README.md`](../eobody-iii/README.md)). Basta un comune **adattatore passivo 3.5mm → 6.35mm** (economico, reperibile ovunque) — nessuna incompatibilità elettrica: una tavoletta usa solo punta+calza (contatto on/off), non serve il terzo contatto (anello, 5V) usato invece dai sensori continui dei raggi.
 
+## Collegamento confermato (17/10/2026): usare il lato B dell'eobody
+
+Testato con un AbleNet Big Buddy Button tramite adattatore 3.5mm→6.35mm, su tutti i jack di entrambi i lati dell'eobody. Risultato: **il lato B genera un messaggio MIDI alla pressione, il lato A no** (vedi [`../eobody-iii/README.md`](../eobody-iii/README.md) per i dettagli e l'ipotesi che il lato A sia riservato ai raggi). Per le tavolette, collegare sempre al lato B.
+
+Resta un po' di intermittenza (non ogni pressione genera un messaggio) — da approfondire, per ora non blocca i test.
+
 ## Da fare
 
 - [ ] Chiarire con CRAMS quante tavolette servono in un set tipico
 - [ ] Scegliere un modello di switch accessibile già pronto (tipo AbleNet, Jelly Switch) invece di costruirne uno
-- [ ] Procurarsi un adattatore jack 3.5mm (femmina) → 6.35mm (maschio) per collegarlo all'eobody
-- [ ] Testare con il monitor MIDI di [`software/pluto-runtime`](../../software/pluto-runtime/) che la pressione dello switch generi un messaggio MIDI visibile
+- [x] Procurarsi un adattatore jack 3.5mm (femmina) → 6.35mm (maschio) per collegarlo all'eobody
+- [x] Testare con il monitor MIDI di [`software/pluto-runtime`](../../software/pluto-runtime/) che la pressione dello switch generi un messaggio MIDI visibile — confermato, solo sul lato B
+- [ ] Capire l'intermittenza delle pressioni (non sempre generano un messaggio)
 - [ ] Coordinarsi con il musicista di riferimento CRAMS per il suono associato a ogni tavoletta (vedi [`../../software/pluto-runtime/config/mapping.js`](../../software/pluto-runtime/config/mapping.js))

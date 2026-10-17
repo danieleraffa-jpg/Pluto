@@ -12,10 +12,12 @@ Sostituire e affiancare il Soundbeam con una serie di **oggetti fisici** dalle p
 - **Tavolette** — dispositivi solo on/off (trigger binari, senza controllo continuo).
 - Il **settaggio dei suoni/rumori** associati a ogni oggetto viene definito in accordo con un musicista che già collabora con CRAMS — il software deve quindi permettere una mappatura configurabile (non hardcoded) tra input fisico e output sonoro.
 
-## Stato del recupero
+## Stato del recupero (17/10/2026)
 
-- **Sensori**: recuperabili come hardware (in corso) — [`hardware/eobody-iii/`](hardware/eobody-iii/) e [`hardware/custom-nano33-board/`](hardware/custom-nano33-board/) sono probabilmente il "motore" sensore→MIDI su cui costruire raggi e tavolette.
-- **Software**: da riscrivere da zero, non risultano copie superstiti del software/patch originali.
+- **eobody III**: collegato, riconosciuto da Windows e da [`software/pluto-runtime`](software/pluto-runtime/) via Web MIDI. Mappatura canale/CC testata empiricamente: canale 1 sempre, CC = numero jack sul lato A (1-8), numero+8 sul lato B (9-16). Il **lato B risponde agli switch on/off** (adatto alle tavolette), il **lato A per ora no** con un semplice interruttore (ipotesi: riservato ai sensori continui dei raggi, da confermare). Dettagli e stato in [`hardware/eobody-iii/`](hardware/eobody-iii/).
+- **Raggi**: da costruire su misura (nessun prodotto pronto adatto), elettronica semplice prevista (sensore resistivo su jack TRS). Non ancora testato un sensore continuo vero sul lato A.
+- **Tavolette**: funzionano con switch accessibili pronti (testato AbleNet Big Buddy Button) + adattatore 3.5mm→6.35mm, collegati al lato B dell'eobody. Resta un'intermittenza nelle pressioni da capire, probabile contatto meccanico incerto — prossimo passo: editor ufficiale Eowave (serve registrare il numero di serie del dispositivo).
+- **Software**: primo prototipo funzionante in [`software/pluto-runtime/`](software/pluto-runtime/) — riceve MIDI reale, logica raggio/tavoletta implementata, sintetizzatore placeholder (suoni veri da definire col musicista), monitor MIDI grezzo per il debug hardware.
 - Il nuovo device commerciale Soundbeam (versione aggiornata rispetto a quella usata all'epoca da CRAMS) non replica alcune funzionalità del vecchio setup — dettaglio ancora da verificare con chi usava il sistema (Maurizio Rocca, Domenico Priolo, Stefano Fumagalli).
 
 ## Struttura del repository

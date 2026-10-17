@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pluto-runtime",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "software/pluto-runtime"],
+      "port": 5173
+    }
+  ]
+}
