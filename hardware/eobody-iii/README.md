@@ -36,6 +36,14 @@ Il dispositivo ha però una **modalità "trigger" dedicata**, separata da quella
 
 Niente bisogno di registrarsi su eowave.com: Eowave pubblica una cartella Google Drive pubblica con editor e documentazione (`eowave_public`, [struttura in `docs/reference/README.md`](../../docs/reference/README.md)). Scaricato `eobody3_editor_v1_3.zip` da `eowave_public/LEGACY/eobody`. **Attenzione**: il file dentro lo zip si chiama `.mxf` e Windows lo associa erroneamente a VLC — in realtà è un **file Max/MSP** (verificato leggendo i byte: intestazione `mx@c` seguita da JSON `"patcher"`), va aperto con **Max Runtime** (gratuito, cycling74.com), non è un video.
 
+### Diagnosi finale sugli switch — causa reale trovata (17/10/2026)
+
+Con l'editor ufficiale aperto e il device collegato, provato a impostare l'input 9 (= jack b1) sul tipo **"note on"** (modalità trigger, alternativa a "Control Change") con soglie basse: risultato pulito quando scatta (es. `NOTE_ON 1 9 127` poi `NOTE_ON 1 9 0`), ma **la pressione dello switch non generava nulla**, nemmeno con soglie minime — mentre staccare/riattaccare il jack generava sempre un evento pulito e netto (127).
+
+Causa individuata: un ingresso dell'eobody **non collegato a nulla capta rumore casuale** (si comporta come un'antenna — confermato collegando l'adattatore vuoto, senza switch, e vedendo comunque arrivare valori). Uno switch a 2 fili (punta+calza) collega la punta alla massa solo quando è premuto — da rilasciato la punta resta "fluttuante" come un ingresso vuoto, quindi il segnale non è mai definito in entrambi gli stati come si aspetta l'eobody (che è pensato per sensori con partitore di tensione punta-anello-calza, non per un semplice contatto a 2 fili).
+
+**Soluzione tecnica nota ma non ancora applicata**: aggiungere una resistenza di pull-up tra l'anello (5V) e la punta del jack, così la punta resta sempre a un valore definito (alta a riposo, bassa quando lo switch corto-circuita verso massa). Richiede un minimo di saldatura o un adattatore su misura (jack + resistenza) — **messo in pausa per ora** (17/10/2026), da riprendere con un saldatore/jack di scorta disponibili, o rivalutando se usare la scheda Arduino custom già in mano al posto del lato switch dell'eobody (gli ingressi digitali di un Arduino hanno pull-up integrato via software, zero componenti aggiuntivi).
+
 ## Da fare
 
 - [x] Procurarsi il cavo USB giusto — risolto, era "auto-powered", non serve alimentatore separato
@@ -43,9 +51,10 @@ Niente bisogno di registrarsi su eowave.com: Eowave pubblica una cartella Google
 - [x] Confermare il numero di jack fisici — 16, 8 per lato (a1-a8, b1-b8)
 - [x] Mappare canale/CC per jack — vedi sopra: canale 1 sempre, CC = numero jack (lato A) o numero+8 (lato B)
 - [x] Capire perché gli switch non reagivano — confermato che è il lato A a non rispondere, non i pulsanti; lato B funziona
-- [x] Indagare l'intermittenza sul lato B — causa trovata: filtro/noise-gate di fabbrica, serve passare i canali in modalità trigger via editor
+- [x] Indagare l'intermittenza sul lato B — causa reale trovata: ingresso fluttuante senza pull-up, non il noise-gate (quello era solo un sintomo collaterale)
 - [x] Trovare l'editor ufficiale Eowave — trovato pubblicamente, senza registrazione (vedi sopra)
-- [ ] Installare Max Runtime, aprire l'editor e impostare i canali del lato B in modalità trigger con una soglia di sensibilità adeguata
+- [ ] **In pausa**: aggiungere una resistenza di pull-up (anello→punta) per risolvere definitivamente gli switch sul lato B — serve saldatore o jack di scorta
+- [ ] Valutare in alternativa la scheda Arduino custom per gli switch (pull-up integrato, nessun componente aggiuntivo necessario)
 - [ ] Testare un sensore continuo vero (FSR o pedale) sul lato A, per confermare l'ipotesi "lato A = raggi, lato B = tavolette"
 - [ ] Aggiornare [`software/pluto-runtime/config/mapping.js`](../../software/pluto-runtime/config/mapping.js) con la mappatura reale una volta assegnati raggi/tavolette ai jack definitivi
 - [ ] Elencare i sensori fisicamente collegati (tipo, canale a/b, numero) quando il set è definitivo
