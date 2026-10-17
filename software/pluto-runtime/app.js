@@ -118,14 +118,69 @@
     delete voices[channel];
   }
 
+  // ---------------------------------------------------------------------
+  // Campioni audio veri (file .wav), alternativa al sintetizzatore. Se un
+  // canale ha un campo "sample" in config/mapping.js, usiamo quel file al
+  // posto dell'oscillatore — stessa logica di trigger, cambia solo cosa
+  // suona. Pensato cosi' apposta: quando arriveranno i suoni scelti dal
+  // musicista, basta cambiare il percorso del file in mapping.js, senza
+  // toccare questo codice.
+  // ---------------------------------------------------------------------
+
+  const SAMPLE_BASE_NOTE = 60; // Do centrale: i file .wav sono registrati a questa altezza
+  const sampleCache = {}; // url -> Promise<AudioBuffer>
+
+  function loadSample(url) {
+    if (!sampleCache[url]) {
+      sampleCache[url] = fetch(url)
+        .then((res) => res.arrayBuffer())
+        .then((data) => ensureAudioContext().decodeAudioData(data));
+    }
+    return sampleCache[url];
+  }
+
+  // I campioni sono "fire and forget": ogni trigger parte una nuova
+  // riproduzione che si esaurisce da sola (come un vero strumento a
+  // percussione/mallet), senza bisogno di una voce da fermare esplicitamente.
+  async function playSample(cfg, midiNote) {
+    try {
+      const buffer = await loadSample(cfg.sample);
+      const ctx = ensureAudioContext();
+      const source = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      source.buffer = buffer;
+      source.playbackRate.value = Math.pow(2, (midiNote - SAMPLE_BASE_NOTE) / 12);
+      gain.gain.value = 0.9;
+      source.connect(gain).connect(ctx.destination);
+      source.start();
+    } catch (err) {
+      console.error("Campione non caricato:", cfg.sample, err);
+    }
+  }
+
+  // Punto unico per far partire un suono su un canale, sia che usi un
+  // campione sia il sintetizzatore — decide quale dei due in base a
+  // cfg.sample, cosi' il resto del codice non deve saperlo.
+  function triggerNote(channel, cfg, midiNote) {
+    if (cfg.sample) playSample(cfg, midiNote);
+    else startVoice(channel, midiNote, cfg.waveform);
+    setTileActive(channel, midiNote, true);
+  }
+
+  // Equivalente per il rilascio (fine pressione di un raggio): un campione
+  // non va fermato (si esaurisce da solo), un oscillatore si'.
+  function releaseNote(channel, cfg) {
+    if (!cfg.sample) stopVoice(channel);
+    setTileActive(channel, null, false);
+  }
+
   // Una "tavoletta" suona un colpo breve e si ferma da sola (one-shot),
   // niente da tenere premuto.
-  function playOneShot(channel, midiNote, waveform) {
-    startVoice(channel, midiNote, waveform);
-    setTileActive(channel, midiNote, true);
+  function playOneShot(channel, cfg) {
+    triggerNote(channel, cfg, cfg.note);
     setTimeout(() => {
-      stopVoice(channel, 0.2);
-      setTileActive(channel, midiNote, false);
+      if (!cfg.sample) stopVoice(channel, 0.2);
+      setTileActive(channel, cfg.note, false);
     }, 180);
   }
 
@@ -147,16 +202,15 @@
     state.lastDivision = divisionIndex;
     state.activeNote = note;
 
-    startVoice(channel, note, cfg.waveform);
-    setTileActive(channel, note, true);
+    triggerNote(channel, cfg, note);
   }
 
   function handleRaggioRelease(channel) {
+    const cfg = MAPPING.channels[channel];
     const state = channelState[channel];
     state.lastDivision = null;
     state.activeNote = null;
-    stopVoice(channel);
-    setTileActive(channel, null, false);
+    releaseNote(channel, cfg || {});
   }
 
   // ---------------------------------------------------------------------
@@ -199,11 +253,8 @@
 
     if (command === 0x90 && data2 > 0) {
       // Note On diretto (es. un sensore gia' configurato per mandare note dirette)
-      if (cfg.type === "tavoletta") playOneShot(channel, cfg.note, cfg.waveform);
-      else {
-        startVoice(channel, data1, cfg.waveform);
-        setTileActive(channel, data1, true);
-      }
+      if (cfg.type === "tavoletta") playOneShot(channel, cfg);
+      else triggerNote(channel, cfg, data1);
     } else if (command === 0x80 || (command === 0x90 && data2 === 0)) {
       // Note Off
       if (cfg.type === "raggio") handleRaggioRelease(channel);
@@ -213,7 +264,7 @@
         if (data2 === 0) handleRaggioRelease(channel);
         else handleRaggioContinuous(channel, cfg, data2);
       } else if (cfg.type === "tavoletta" && data2 > 0) {
-        playOneShot(channel, cfg.note, cfg.waveform);
+        playOneShot(channel, cfg);
       }
     }
   }
@@ -260,15 +311,14 @@
         // ogni tasto simula una "division" del raggio, come muoversi lungo un beam
         const note = raggioCfg.scale[keyIndex % raggioCfg.scale.length];
         channelState[raggioChannel].lastDivision = keyIndex;
-        startVoice(raggioChannel, note, raggioCfg.waveform);
-        setTileActive(raggioChannel, note, true);
+        triggerNote(raggioChannel, raggioCfg, note);
         return;
       }
 
       const tavoletta = tavolette.find((t) => t.key === e.key);
       if (tavoletta) {
         const cfg = MAPPING.channels[tavoletta.channel];
-        playOneShot(tavoletta.channel, cfg.note, cfg.waveform);
+        playOneShot(tavoletta.channel, cfg);
       }
     });
 
@@ -359,14 +409,8 @@
     // interruttore sostenuto, non come una distanza.
     if (line === "1" || line === "0") {
       ensureAudioContext();
-      if (line === "1") {
-        const note = cfg.note ?? cfg.scale[0];
-        startVoice("radar", note, cfg.waveform);
-        setTileActive("radar", note, true);
-      } else {
-        stopVoice("radar");
-        setTileActive("radar", null, false);
-      }
+      if (line === "1") triggerNote("radar", cfg, cfg.note ?? cfg.scale[0]);
+      else releaseNote("radar", cfg);
       return;
     }
 
@@ -379,8 +423,7 @@
     if (outOfRange) {
       if (state.lastDivision !== null) {
         state.lastDivision = null;
-        stopVoice("radar");
-        setTileActive("radar", null, false);
+        releaseNote("radar", cfg);
       }
       return;
     }
@@ -390,8 +433,7 @@
     if (divisionIndex === state.lastDivision) return; // stessa division, nessun ritrigger (comportamento Re-Trigger)
 
     state.lastDivision = divisionIndex;
-    startVoice("radar", note, cfg.waveform);
-    setTileActive("radar", note, true);
+    triggerNote("radar", cfg, note);
   }
 
   // ---------------------------------------------------------------------

@@ -9,11 +9,19 @@
 // usa. Una "tavoletta" suona sempre e solo UNA nota, ogni volta che viene
 // premuta (comportamento on/off).
 //
-// Per cambiare un suono: cambia i numeri in "scale" (sono note MIDI,
-// 60 = Do centrale) o il valore di "waveform" (sine / triangle / square /
-// sawtooth sono i quattro timbri base del sintetizzatore integrato).
-// Per cambiare il colore del feedback visivo: cambia "color" (formato
-// esadecimale, es. "#e0574a").
+// Ogni canale puo' suonare in due modi:
+//  - con un FILE AUDIO vero, se ha un campo "sample" (percorso a un .wav) —
+//    e' quello che useremo quando il musicista sceglie i suoni definitivi:
+//    basta sostituire il file e/o cambiare questo percorso, senza toccare
+//    app.js. Il file va registrato alla nota 60 (Do centrale): per le altre
+//    note viene semplicemente riprodotto piu' veloce/lento (pitch-shift).
+//  - altrimenti con il sintetizzatore integrato, usando "waveform" (sine /
+//    triangle / square / sawtooth) — serve solo come segnaposto finche' non
+//    ci sono suoni veri.
+//
+// Per cambiare le note disponibili: cambia i numeri in "scale" (sono note
+// MIDI, 60 = Do centrale). Per cambiare il colore del feedback visivo:
+// cambia "color" (formato esadecimale, es. "#e0574a").
 //
 // Non serve toccare app.js per cambiare questi valori.
 
@@ -25,7 +33,8 @@ window.PLUTO_MAPPING = {
       type: "raggio",
       trigger: "retrigger",
       scale: [60, 62, 64, 67, 69, 72, 74, 76, 79, 81],
-      waveform: "sine",
+      sample: "assets/samples/campana.wav",
+      waveform: "sine", // usato solo se "sample" manca o non si carica
       color: "#e0574a",
     },
     2: {
@@ -33,6 +42,7 @@ window.PLUTO_MAPPING = {
       type: "raggio",
       trigger: "retrigger",
       scale: [48, 51, 53, 55, 58, 60, 63, 65],
+      sample: "assets/samples/marimba.wav",
       waveform: "triangle",
       color: "#3c8dbc",
     },
@@ -41,6 +51,7 @@ window.PLUTO_MAPPING = {
       type: "tavoletta",
       trigger: "oneshot",
       note: 60,
+      sample: "assets/samples/legno.wav",
       waveform: "square",
       color: "#2ca25f",
     },
@@ -49,6 +60,7 @@ window.PLUTO_MAPPING = {
       type: "tavoletta",
       trigger: "oneshot",
       note: 67,
+      sample: "assets/samples/metallo.wav",
       waveform: "sawtooth",
       color: "#d9a441",
     },
@@ -66,6 +78,7 @@ window.PLUTO_MAPPING = {
       minCm: 5,
       maxCm: 80,
       scale: [55, 58, 60, 63, 65, 67, 70],
+      sample: "assets/samples/cristallo.wav",
       waveform: "triangle",
       color: "#8858c8",
     },
