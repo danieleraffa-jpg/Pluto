@@ -26,9 +26,15 @@ Test sistematico con lo stesso switch (AbleNet Big Buddy Button, mono) provato s
 
 **Ipotesi di lavoro**: il lato A è configurato di fabbrica per sensori continui (adatto ai **raggi**), il lato B per interruttori on/off (adatto alle **tavolette**) — coincide comodamente con le due famiglie di oggetti del progetto. Da confermare testando un vero sensore continuo (FSR/pedale) sul lato A.
 
-### Intermittenza sul lato B (indagine chiusa per ora)
+### Intermittenza sul lato B — causa trovata (17/10/2026)
 
-Sia con uno switch mono (AbleNet Big Buddy Button) che con uno stereo, la pressione genera un messaggio solo a volte, in modo irregolare — ma **quando succede, arriva sempre come coppia pulita** (premuto+rilasciato insieme), mai un segnale isolato o rumoroso. Indica un contatto meccanico non sempre saldo (adattatore o presa) più che un problema di segnale elettrico disturbato o di configurazione del canale. Provato a ruotare/reinserire i jack più volte: nessun miglioramento. Senza multimetro o adattatori diversi da provare, qui ci fermiamo — prossimo passo utile è l'editor ufficiale Eowave (vedi sotto), che potrebbe mostrare soglie di debounce regolabili.
+Sia con uno switch mono (AbleNet Big Buddy Button) che con uno stereo, la pressione generava un messaggio solo a volte, in modo irregolare, ma sempre come coppia pulita (premuto+rilasciato insieme) quando succedeva. Il dubbio "contatto meccanico incerto" è stato superato trovando il poster ufficiale NIME 2011 di Eowave sull'eobody3 ([`docs/reference/eobody3-poster-nime2011.pdf`](../../docs/reference/eobody3-poster-nime2011.pdf)): **l'eobody3 applica di fabbrica un filtro passa-basso + un "noise gate" al segnale**, pensato per smussare sensori continui — a volte scambia una pressione rapida dell'interruttore per rumore da eliminare. Non è un problema hardware.
+
+Il dispositivo ha però una **modalità "trigger" dedicata**, separata da quella per sensori continui, con un parametro di sensibilità regolabile e risposta sotto i 2ms. Probabile soluzione: impostare i canali del lato B in modalità trigger invece che sensore continuo, tramite l'editor ufficiale (vedi sotto).
+
+### Editor ufficiale trovato senza registrazione (17/10/2026)
+
+Niente bisogno di registrarsi su eowave.com: Eowave pubblica una cartella Google Drive pubblica con editor e documentazione (`eowave_public`, [struttura in `docs/reference/README.md`](../../docs/reference/README.md)). Scaricato `eobody3_editor_v1_3.zip` da `eowave_public/LEGACY/eobody`. **Attenzione**: il file dentro lo zip si chiama `.mxf` e Windows lo associa erroneamente a VLC — in realtà è un **file Max/MSP** (verificato leggendo i byte: intestazione `mx@c` seguita da JSON `"patcher"`), va aperto con **Max Runtime** (gratuito, cycling74.com), non è un video.
 
 ## Da fare
 
@@ -37,8 +43,9 @@ Sia con uno switch mono (AbleNet Big Buddy Button) che con uno stereo, la pressi
 - [x] Confermare il numero di jack fisici — 16, 8 per lato (a1-a8, b1-b8)
 - [x] Mappare canale/CC per jack — vedi sopra: canale 1 sempre, CC = numero jack (lato A) o numero+8 (lato B)
 - [x] Capire perché gli switch non reagivano — confermato che è il lato A a non rispondere, non i pulsanti; lato B funziona
-- [x] Indagare l'intermittenza sul lato B con gli strumenti disponibili — probabile contatto meccanico incerto, non risolvibile senza multimetro/adattatori diversi
-- [ ] Trovare/leggere il numero di serie sul dispositivo e registrarlo su eowave.com per accedere a editor, manuale e patch ufficiali — prossimo passo prioritario, potrebbe spiegare/risolvere l'intermittenza
+- [x] Indagare l'intermittenza sul lato B — causa trovata: filtro/noise-gate di fabbrica, serve passare i canali in modalità trigger via editor
+- [x] Trovare l'editor ufficiale Eowave — trovato pubblicamente, senza registrazione (vedi sopra)
+- [ ] Installare Max Runtime, aprire l'editor e impostare i canali del lato B in modalità trigger con una soglia di sensibilità adeguata
 - [ ] Testare un sensore continuo vero (FSR o pedale) sul lato A, per confermare l'ipotesi "lato A = raggi, lato B = tavolette"
 - [ ] Aggiornare [`software/pluto-runtime/config/mapping.js`](../../software/pluto-runtime/config/mapping.js) con la mappatura reale una volta assegnati raggi/tavolette ai jack definitivi
 - [ ] Elencare i sensori fisicamente collegati (tipo, canale a/b, numero) quando il set è definitivo
