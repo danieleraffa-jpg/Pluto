@@ -52,6 +52,23 @@ window.PLUTO_MAPPING = {
       waveform: "sawtooth",
       color: "#d9a441",
     },
+    // "radar" non e' un canale MIDI (non ha un numero 1-16): e' un sensore
+    // a ultrasuoni HC-SR04 collegato via USB seriale a un Arduino (vedi
+    // firmware/distanza-ultrasuoni/), non attraverso l'eobody. Funziona
+    // come un raggio: la distanza rilevata (in centimetri, tra minCm e
+    // maxCm) sceglie una nota dalla scala - stesso principio "posizione ->
+    // nota" dei raggi collegati all'eobody, solo che qui il valore arriva
+    // via Seriale invece che via MIDI.
+    radar: {
+      label: "Radar distanza",
+      type: "raggio",
+      trigger: "retrigger",
+      minCm: 5,
+      maxCm: 80,
+      scale: [55, 58, 60, 63, 65, 67, 70],
+      waveform: "triangle",
+      color: "#8858c8",
+    },
   },
 
   // Simulazione da tastiera del computer, usata finche' l'hardware vero

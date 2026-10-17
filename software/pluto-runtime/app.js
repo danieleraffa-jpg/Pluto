@@ -279,8 +279,125 @@
   }
 
   // ---------------------------------------------------------------------
+  // Sensore di presenza via Seriale USB (es. Arduino + PIR HC-SR501,
+  // vedi firmware/presenza-pir/). Non passa dall'eobody ne' da Web MIDI:
+  // e' una connessione diretta Arduino-browser via Web Serial API.
+  // L'Arduino manda "1" quando rileva presenza, "0" quando cessa; qui
+  // teniamo il suono acceso finche' dura la presenza (comportamento
+  // "sostenuto", diverso dal colpo singolo di una tavoletta).
+  // ---------------------------------------------------------------------
+
+  function initRadarSerial() {
+    const button = document.getElementById("radarConnect");
+    if (!button) return;
+
+    if (!("serial" in navigator)) {
+      button.textContent = "Seriale non supportata (usa Chrome/Edge)";
+      button.disabled = true;
+      return;
+    }
+
+    button.addEventListener("click", connectRadarSerial);
+  }
+
+  async function connectRadarSerial() {
+    const button = document.getElementById("radarConnect");
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+      button.textContent = "Sensore seriale collegato";
+      button.disabled = true;
+      readRadarSerial(port);
+    } catch (err) {
+      console.error("Connessione al sensore seriale annullata o fallita", err);
+      // Errore piu' frequente: un'altra app (es. il Monitor Seriale di Arduino IDE)
+      // ha gia' la porta aperta. Lo segnaliamo qui invece di fallire in silenzio.
+      button.textContent = "Errore — chiudi il Monitor Seriale di Arduino IDE e riprova";
+    }
+  }
+
+  async function readRadarSerial(port) {
+    const textDecoder = new TextDecoderStream();
+    const streamClosed = port.readable.pipeTo(textDecoder.writable);
+    const reader = textDecoder.readable.getReader();
+    let buffer = "";
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += value;
+
+        let newlineIndex;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
+          handleRadarLine(line);
+        }
+      }
+    } finally {
+      reader.releaseLock();
+      await streamClosed.catch(() => {});
+    }
+  }
+
+  // Come quantizeToScale, ma su un intervallo arbitrario (es. centimetri)
+  // invece del tipico 0-127 MIDI — serve per sensori seriali come l'HC-SR04.
+  function quantizeRangeToScale(value, min, max, scale) {
+    const clamped = Math.max(min, Math.min(max, value));
+    const ratio = (clamped - min) / (max - min);
+    const index = Math.min(scale.length - 1, Math.floor(ratio * scale.length));
+    return { note: scale[index], divisionIndex: index };
+  }
+
+  function handleRadarLine(line) {
+    const cfg = MAPPING.channels.radar;
+    if (!cfg) return;
+
+    // Compatibilita' con un eventuale sensore on/off (es. PIR HC-SR501): se
+    // il firmware manda "1"/"0" invece di un numero, lo trattiamo come un
+    // interruttore sostenuto, non come una distanza.
+    if (line === "1" || line === "0") {
+      ensureAudioContext();
+      if (line === "1") {
+        const note = cfg.note ?? cfg.scale[0];
+        startVoice("radar", note, cfg.waveform);
+        setTileActive("radar", note, true);
+      } else {
+        stopVoice("radar");
+        setTileActive("radar", null, false);
+      }
+      return;
+    }
+
+    const distanceCm = Number(line);
+    if (!Number.isFinite(distanceCm)) return; // riga non riconosciuta (es. testo di debug): la ignoriamo
+
+    const state = channelState.radar;
+    const outOfRange = distanceCm <= 0 || distanceCm > cfg.maxCm;
+
+    if (outOfRange) {
+      if (state.lastDivision !== null) {
+        state.lastDivision = null;
+        stopVoice("radar");
+        setTileActive("radar", null, false);
+      }
+      return;
+    }
+
+    ensureAudioContext();
+    const { note, divisionIndex } = quantizeRangeToScale(distanceCm, cfg.minCm, cfg.maxCm, cfg.scale);
+    if (divisionIndex === state.lastDivision) return; // stessa division, nessun ritrigger (comportamento Re-Trigger)
+
+    state.lastDivision = divisionIndex;
+    startVoice("radar", note, cfg.waveform);
+    setTileActive("radar", note, true);
+  }
+
+  // ---------------------------------------------------------------------
 
   buildStage();
   initWebMidi();
   initKeyboardSimulation();
+  initRadarSerial();
 })();

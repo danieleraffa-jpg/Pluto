@@ -11,6 +11,7 @@ Una pagina web (HTML/JS, nessuna build necessaria) che:
 - suona con un sintetizzatore interno via Web Audio — **non servono ancora file audio**: i suoni veri li sceglierà il musicista in un secondo momento, qui servono solo a verificare che il sistema risponda;
 - mostra un feedback visivo immediato (il riquadro del canale si illumina) — utile sia per testare sia come base per il feedback al paziente;
 - ha un **monitor MIDI grezzo** in fondo alla pagina: mostra ogni messaggio ricevuto (canale, tipo, valori) anche se non è ancora configurato in `config/mapping.js`. Serve a scoprire su quale canale/numero manda davvero un jack dell'eobody collegandoci un sensore, invece di doverlo indovinare.
+- supporta anche un **sensore a ultrasuoni via Seriale USB** (Arduino + HC-SR04, vedi [`firmware/distanza-ultrasuoni/`](../../firmware/distanza-ultrasuoni/), **testato e funzionante**) — canale "radar", indipendente dall'eobody/MIDI. Pulsante "Collega sensore seriale" in alto a destra. Si comporta come un raggio: la distanza rilevata sceglie una nota dalla scala. Codice pronto anche per un eventuale sensore on/off tipo PIR (vedi [`hardware/radar-presenza/`](../../hardware/radar-presenza/) per la storia completa, incluso un primo tentativo con un PIR risultato difettoso).
 
 ## Come si usa adesso (senza hardware)
 
@@ -22,6 +23,8 @@ Una pagina web (HTML/JS, nessuna build necessaria) che:
 ## Quando arriva l'hardware vero
 
 Basta collegare l'eobody III via USB: Chrome/Edge lo rileverà automaticamente come dispositivo MIDI (dopo aver dato il permesso quando richiesto dal browser) e i messaggi reali sostituiranno quelli simulati da tastiera, senza bisogno di modificare il codice.
+
+Per il sensore radar: carica [`firmware/distanza-ultrasuoni/distanza-ultrasuoni.ino`](../../firmware/distanza-ultrasuoni/distanza-ultrasuoni.ino) su un Arduino qualsiasi con un HC-SR04 collegato (Trig→pin 2, Echo→pin 3, VCC→5V, GND→GND), poi clicca "Collega sensore seriale" nella pagina e scegli la porta COM dell'Arduino dal menu del browser. Funziona con qualunque Arduino (testato su Mega 2560) perché usa solo la Seriale di base, non MIDI. Se il Monitor Seriale di Arduino IDE è aperto sulla stessa porta, il collegamento fallisce — chiudilo prima.
 
 ## Cosa modificare per cambiare suoni/numero di oggetti
 

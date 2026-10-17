@@ -43,6 +43,26 @@ h1 {
 .status.ok { color: #7bd88f; }
 .status.warn { color: #e0b24a; }
 
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-button {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid #333c4a;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.status-button:hover:not(:disabled) { border-color: #4a5668; }
+.status-button:disabled { color: var(--muted); cursor: default; }
+
 main#stage {
   flex: 1;
   display: grid;
