@@ -82,6 +82,20 @@ window.PLUTO_MAPPING = {
       waveform: "triangle",
       color: "#8858c8",
     },
+    // "switchSeriale" nemmeno questo e' un canale MIDI: e' un interruttore
+    // (es. mini switch su breadboard) collegato a un pin digitale della
+    // stessa Arduino del radar, con il pull-up interno del microcontrollore
+    // (nessuna resistenza esterna necessaria, a differenza dei jack
+    // dell'eobody). Si comporta come una tavoletta: un suono per pressione.
+    switchSeriale: {
+      label: "Switch Arduino",
+      type: "tavoletta",
+      trigger: "oneshot",
+      note: 72,
+      sample: "assets/samples/legno.wav",
+      waveform: "square",
+      color: "#e0a830",
+    },
   },
 
   // Simulazione da tastiera del computer, usata finche' l'hardware vero

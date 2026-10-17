@@ -1,6 +1,6 @@
-// Firmware per sensore a ultrasuoni HC-SR04 (misura di distanza continua),
-// alternativa al PIR HC-SR501 per il canale "radar" - da' un vero valore
-// continuo (come il principio del beam Soundbeam), non solo presenza si/no.
+// Firmware per la Arduino Mega: sensore a ultrasuoni HC-SR04 (distanza
+// continua, canale "radar") + uno switch semplice (canale "tavoletta
+// seriale") sulla stessa connessione USB.
 //
 // Collegamento HC-SR04:
 //   VCC   -> 5V
@@ -8,29 +8,43 @@
 //   Trig  -> pin 2 (uscita)
 //   Echo  -> pin 3 (ingresso)
 //
-// Manda la distanza misurata in centimetri via Seriale, una riga per
-// lettura (es. "23"), solo quando cambia rispetto all'ultima misura
-// inviata. pluto-runtime (software/pluto-runtime/) la legge via Web
-// Serial e la trasforma in una nota scelta da una scala, come i raggi
-// collegati all'eobody - stesso principio "posizione -> nota".
+// Collegamento switch (es. mini switch a 4 piedini su breadboard):
+//   un piedino -> pin 4
+//   il piedino opposto -> GND
+//   (bastano questi 2 fili: il pull-up e' interno al microcontrollore,
+//   attivato con INPUT_PULLUP - nessuna resistenza esterna necessaria.
+//   Per questo lo stesso problema del pull-up sull'eobody qui non esiste.)
 //
-// Se non rileva nessun oggetto entro la portata massima, manda "0"
-// (fuori raggio = nessun suono, come l'area inattiva di un beam
-// Soundbeam).
+// Protocollo seriale: ogni riga ha un prefisso per distinguere i due
+// sensori, cosi' pluto-runtime sa a quale canale indirizzarla:
+//   "D:<cm>"  distanza in centimetri (manda solo quando cambia)
+//   "S:1"     switch premuto
+//   "S:0"     switch rilasciato
 
 const int TRIG_PIN = 2;
 const int ECHO_PIN = 3;
+const int SWITCH_PIN = 4;
 const unsigned long ECHO_TIMEOUT_US = 30000; // ~5m di portata massima
+const unsigned long SWITCH_DEBOUNCE_MS = 30;
 
 int lastSentCm = -1;
+int lastSwitchState = HIGH; // HIGH a riposo grazie al pull-up interno
+unsigned long lastSwitchChangeMs = 0;
 
 void setup() {
   Serial.begin(9600);
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
 }
 
 void loop() {
+  readDistance();
+  readSwitch();
+  delay(20);
+}
+
+void readDistance() {
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG_PIN, HIGH);
@@ -41,9 +55,18 @@ void loop() {
   int distanceCm = duration == 0 ? 0 : (int)(duration * 0.0343 / 2);
 
   if (distanceCm != lastSentCm) {
+    Serial.print("D:");
     Serial.println(distanceCm);
     lastSentCm = distanceCm;
   }
+}
 
-  delay(60); // ~16 letture al secondo, abbastanza reattivo senza intasare la seriale
+void readSwitch() {
+  int state = digitalRead(SWITCH_PIN);
+  if (state != lastSwitchState && (millis() - lastSwitchChangeMs) > SWITCH_DEBOUNCE_MS) {
+    // col pull-up interno, LOW = premuto (collegato a massa), HIGH = a riposo
+    Serial.println(state == LOW ? "S:1" : "S:0");
+    lastSwitchState = state;
+    lastSwitchChangeMs = millis();
+  }
 }

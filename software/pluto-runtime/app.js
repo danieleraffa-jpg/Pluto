@@ -382,7 +382,7 @@
         while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
           const line = buffer.slice(0, newlineIndex).trim();
           buffer = buffer.slice(newlineIndex + 1);
-          handleRadarLine(line);
+          handleSerialLine(line);
         }
       }
     } finally {
@@ -400,19 +400,30 @@
     return { note: scale[index], divisionIndex: index };
   }
 
-  function handleRadarLine(line) {
+  // Smista una riga ricevuta dall'Arduino al canale giusto. Il firmware
+  // attuale (firmware/distanza-ultrasuoni/) manda righe con prefisso
+  // "D:<cm>" (distanza) o "S:1"/"S:0" (switch) cosi' i due sensori possono
+  // condividere la stessa connessione Seriale. Restano supportati anche i
+  // vecchi formati senza prefisso (solo "radar": un numero nudo, o "1"/"0"
+  // per un eventuale PIR) per compatibilita' con firmware precedenti.
+  function handleSerialLine(line) {
+    if (line.startsWith("D:")) handleRadarDistance(line.slice(2));
+    else if (line.startsWith("S:")) handleSerialSwitch(line.slice(2));
+    else if (line === "1" || line === "0") handleRadarPresence(line);
+    else handleRadarDistance(line);
+  }
+
+  function handleRadarPresence(line) {
     const cfg = MAPPING.channels.radar;
     if (!cfg) return;
+    ensureAudioContext();
+    if (line === "1") triggerNote("radar", cfg, cfg.note ?? cfg.scale[0]);
+    else releaseNote("radar", cfg);
+  }
 
-    // Compatibilita' con un eventuale sensore on/off (es. PIR HC-SR501): se
-    // il firmware manda "1"/"0" invece di un numero, lo trattiamo come un
-    // interruttore sostenuto, non come una distanza.
-    if (line === "1" || line === "0") {
-      ensureAudioContext();
-      if (line === "1") triggerNote("radar", cfg, cfg.note ?? cfg.scale[0]);
-      else releaseNote("radar", cfg);
-      return;
-    }
+  function handleRadarDistance(line) {
+    const cfg = MAPPING.channels.radar;
+    if (!cfg) return;
 
     const distanceCm = Number(line);
     if (!Number.isFinite(distanceCm)) return; // riga non riconosciuta (es. testo di debug): la ignoriamo
@@ -434,6 +445,17 @@
 
     state.lastDivision = divisionIndex;
     triggerNote("radar", cfg, note);
+  }
+
+  // Lo switch sulla Mega si comporta come una tavoletta: un colpo solo
+  // alla pressione, il rilascio ("S:0") non fa suonare nulla.
+  function handleSerialSwitch(line) {
+    const cfg = MAPPING.channels.switchSeriale;
+    if (!cfg) return;
+    if (line === "1") {
+      ensureAudioContext();
+      playOneShot("switchSeriale", cfg);
+    }
   }
 
   // ---------------------------------------------------------------------

@@ -12,6 +12,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 function synth({ duration, partials, attack = 0.004, noiseBurst = null }) {
   const n = Math.floor(SAMPLE_RATE * duration);
   const buf = new Float32Array(n);
+  let noiseState = 0; // per il filtro passa-basso del rumore, vedi sotto
+
   for (let i = 0; i < n; i++) {
     const t = i / SAMPLE_RATE;
     let s = 0;
@@ -19,7 +21,14 @@ function synth({ duration, partials, attack = 0.004, noiseBurst = null }) {
       s += p.amp * Math.sin(2 * Math.PI * p.freq * t) * Math.exp(-t / p.decay);
     }
     if (noiseBurst && t < noiseBurst.duration) {
-      s += (Math.random() * 2 - 1) * noiseBurst.amp * (1 - t / noiseBurst.duration);
+      // Rumore bianco grezzo = fruscio/statico, poco realistico per un "colpo"
+      // (legno, metallo...). Lo filtriamo con un semplice passa-basso a un
+      // polo (media mobile esponenziale) per renderlo un "thump" morbido
+      // invece che un fruscio. "alpha" piu' basso = filtro piu' marcato.
+      const raw = Math.random() * 2 - 1;
+      const alpha = noiseBurst.alpha ?? 0.3;
+      noiseState += (raw - noiseState) * alpha;
+      s += noiseState * noiseBurst.amp * (1 - t / noiseBurst.duration);
     }
     const env = t < attack ? t / attack : 1;
     buf[i] = s * env;
@@ -87,30 +96,35 @@ writeWav(
   })
 );
 
-// legno — Tavoletta 1: percussivo brevissimo, quasi solo rumore filtrato
+// legno — Tavoletta 1: "colpo di legno" (claves) - componente intonata
+// chiara e acuta, rumore solo come breve transiente d'attacco filtrato
 writeWav(
   path.join(OUT_DIR, "legno.wav"),
   synth({
-    duration: 0.25,
+    duration: 0.18,
     attack: 0.001,
-    noiseBurst: { amp: 0.8, duration: 0.05 },
-    partials: [{ freq: F0 * 1.0, amp: 0.3, decay: 0.08 }],
+    noiseBurst: { amp: 0.35, duration: 0.012, alpha: 0.35 },
+    partials: [
+      { freq: F0 * 4.0, amp: 0.6, decay: 0.06 },
+      { freq: F0 * 5.63, amp: 0.3, decay: 0.045 },
+    ],
   })
 );
 
-// metallo — Tavoletta 2: partials inarmoniche brillanti, decadimento medio
+// metallo — Tavoletta 2: partials inarmoniche brillanti con intervalli piu'
+// distinti (meno "ammassate"), rumore d'attacco filtrato e piu' discreto
 writeWav(
   path.join(OUT_DIR, "metallo.wav"),
   synth({
     duration: 0.9,
     attack: 0.002,
-    noiseBurst: { amp: 0.2, duration: 0.02 },
+    noiseBurst: { amp: 0.12, duration: 0.015, alpha: 0.3 },
     partials: [
       { freq: F0 * 1.0, amp: 0.4, decay: 0.5 },
-      { freq: F0 * 1.6, amp: 0.35, decay: 0.45 },
-      { freq: F0 * 2.3, amp: 0.3, decay: 0.4 },
-      { freq: F0 * 3.1, amp: 0.25, decay: 0.35 },
-      { freq: F0 * 4.2, amp: 0.2, decay: 0.3 },
+      { freq: F0 * 1.8, amp: 0.32, decay: 0.45 },
+      { freq: F0 * 2.6, amp: 0.26, decay: 0.4 },
+      { freq: F0 * 3.7, amp: 0.2, decay: 0.32 },
+      { freq: F0 * 5.1, amp: 0.14, decay: 0.26 },
     ],
   })
 );
