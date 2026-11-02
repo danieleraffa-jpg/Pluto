@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il server Pluto, durante lo sviluppo, puo' girare su un PC in rete locale ed
+  essere servito in HTTP semplice (nessun certificato TLS). Da Android 9
+  (API 28) il traffico in chiaro e' bloccato di default: questa config lo
+  permette per tutte le destinazioni, dato che il device e' pensato per
+  collegarsi solo al server sul tablet stesso o sulla LAN dell'installazione.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

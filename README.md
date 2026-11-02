@@ -18,7 +18,7 @@ Sostituire e affiancare il Soundbeam con una serie di **oggetti fisici** dalle p
 - **Raggi**: da costruire su misura (nessun prodotto pronto adatto), elettronica semplice prevista (sensore resistivo su jack TRS). Non ancora testato un sensore continuo vero sul lato A.
 - **Tavolette**: funzionano con switch accessibili pronti (testato AbleNet Big Buddy Button) + adattatore 3.5mm→6.35mm, collegati al lato B dell'eobody. Resta un'intermittenza nelle pressioni da capire, probabile contatto meccanico incerto — prossimo passo: editor ufficiale Eowave (serve registrare il numero di serie del dispositivo).
 - **Software**: prototipo funzionante in [`software/pluto-runtime/`](software/pluto-runtime/) — riceve MIDI reale, logica raggio/tavoletta implementata, suoni campionati (segnaposto, da sostituire con quelli scelti dal musicista), monitor MIDI grezzo nascosto dietro una "modalità tecnica", interfaccia pensata per tablet (tema chiaro, touch).
-- **Tablet (02/11/2026)**: niente sensori wireless (latenza + complessità), ma il runtime **gira in autonomia su un tablet Android** (Freeski C12 / "AUMI AI OS", lo stesso già in uso per Tablettone) via Termux, senza PC né rete — vedi [`termux/README.md`](termux/README.md). Limite scoperto: **Web Serial non funziona su Chrome Android**, quindi il canale radar via Arduino resta solo per PC; Web MIDI (eobody) da confermare con l'hardware vero via USB-OTG.
+- **Tablet (02/11/2026)**: niente sensori wireless (latenza + complessità), ma il runtime **gira in autonomia su un tablet Android** (Freeski C12 / "AUMI AI OS", lo stesso già in uso per Tablettone) via Termux, senza PC né rete — vedi [`termux/README.md`](termux/README.md). Limite scoperto: **Web Serial non funziona su Chrome Android**, quindi il canale radar via Arduino resta solo per PC; Web MIDI (eobody) da confermare con l'hardware vero via USB-OTG. C'è anche un'**icona vera** sul tablet (app Android dedicata, stesso schema di Tablettone) — vedi [`android-kiosk/README.md`](android-kiosk/README.md), incluso un limite noto quando entrambe le app si aprono per la prima volta dopo un riavvio completo del tablet.
 - **Radar (18/10/2026)**: canale sperimentale aggiuntivo con sensore a ultrasuoni HC-SR04 su Arduino, collegato via Seriale invece che tramite l'eobody — funzionante su PC, vedi [`hardware/radar-presenza/`](hardware/radar-presenza/).
 - Il nuovo device commerciale Soundbeam (versione aggiornata rispetto a quella usata all'epoca da CRAMS) non replica alcune funzionalità del vecchio setup — dettaglio ancora da verificare con chi usava il sistema (Maurizio Rocca, Domenico Priolo, Stefano Fumagalli).
 
@@ -29,6 +29,7 @@ Sostituire e affiancare il Soundbeam con una serie di **oggetti fisici** dalle p
 - [`firmware/`](firmware/) — firmware per le schede custom (es. Arduino Nano 33 IoT, sensori seriali)
 - [`software/`](software/) — applicazione software (pluto-runtime)
 - [`termux/`](termux/) — script per far girare pluto-runtime in autonomia su un tablet Android (Termux)
+- [`android-kiosk/`](android-kiosk/) — app Android con icona dedicata, WebView a schermo intero su pluto-runtime
 - [`media/`](media/) — foto e materiale visivo dell'hardware recuperato
 
 Vedi anche il progetto correlato **Tablettone**, sviluppato dallo stesso ambito tecnico CRAMS.

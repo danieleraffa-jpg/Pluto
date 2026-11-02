@@ -1,0 +1,23 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- anello, leggermente ruotato, solo contorno -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="-18">
+        <path
+            android:pathData="M20,54 a34,9 0 1,0 68,0 a34,9 0 1,0 -68,0"
+            android:strokeColor="@color/ic_ring"
+            android:strokeWidth="7"
+            android:fillColor="#00000000" />
+    </group>
+
+    <!-- pianeta, sopra l'anello -->
+    <path
+        android:pathData="M54,54 m-21,0 a21,21 0 1,0 42,0 a21,21 0 1,0 -42,0"
+        android:fillColor="@color/ic_planet" />
+</vector>

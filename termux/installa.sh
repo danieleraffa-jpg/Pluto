@@ -32,18 +32,20 @@ pkill -f "pluto-server.js" || true   # se e' un aggiornamento, riparte col codic
 mkdir -p "$DEST"
 cp "$SORGENTE/pluto-server.js" "$DEST/"
 cp -r "$SORGENTE/pluto-runtime" "$DEST/"
-cp "$SORGENTE/avvia.sh" "$SORGENTE/ferma.sh" "$DEST/"
-chmod +x "$DEST/avvia.sh" "$DEST/ferma.sh"
+cp "$SORGENTE/avvia.sh" "$SORGENTE/ferma.sh" "$SORGENTE/avvio-da-app.sh" "$DEST/"
+chmod +x "$DEST/avvia.sh" "$DEST/ferma.sh" "$DEST/avvio-da-app.sh"
 
 echo "== 3/3 Avvio automatico quando apri Termux =="
-# Se il server e' spento lo riavvia aprendo Termux - comodo se il tablet e'
-# stato riavviato. Niente avvio all'accensione del tablet (Termux:Boot non
-# serve, basta aprire Termux una volta).
+# Se il server e' spento lo riavvia aprendo Termux, e riporta in primo piano
+# l'app Pluto (serve soprattutto se anche l'app Tablettone usa lo stesso
+# meccanismo: senza questo "am start" finale, l'ultima app a reclamare lo
+# schermo e' sempre l'altra). Niente avvio all'accensione del tablet
+# (Termux:Boot non serve, basta aprire Termux una volta).
 touch "$HOME/.bashrc"
-if ! grep -q "pluto-termux/avvia.sh" "$HOME/.bashrc"; then
+if ! grep -q "pluto-termux/avvio-da-app.sh" "$HOME/.bashrc"; then
     cat >> "$HOME/.bashrc" <<'EOF'
-# Pluto: se il server e' spento lo avvia (vedi termux/README.md)
-[ -x ~/pluto-termux/avvia.sh ] && ~/pluto-termux/avvia.sh
+# Pluto: se il server e' spento lo avvia e riapre l'app (vedi termux/README.md)
+[ -x ~/pluto-termux/avvio-da-app.sh ] && ~/pluto-termux/avvio-da-app.sh
 EOF
 fi
 

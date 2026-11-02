@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Pluto</string>
+    <string name="prefs_name">kiosk_prefs</string>
+    <string name="pref_server_url">server_url</string>
+    <string name="default_server_url" translatable="false">http://127.0.0.1:5173</string>
+    <string name="dialog_title_server">Indirizzo server Pluto</string>
+    <string name="dialog_hint_server">http://127.0.0.1:5173 (questo tablet) o http://IP-del-PC:5173</string>
+    <string name="dialog_button_ok">Salva e connetti</string>
+</resources>

@@ -1,2 +1,14 @@
 # Materiale di terzi tenuto solo come riferimento locale (non ridistribuibile) — vedi docs/reference/README.md
 docs/reference/*.pdf
+
+# Dipendenze e cache rigenerabili dell'app Android (stesso schema di Tablettone)
+android-kiosk/.gradle/
+android-kiosk/.idea/
+android-kiosk/.kotlin/
+android-kiosk/app/build/
+android-kiosk/build/
+android-kiosk/local.properties
+
+# OS
+.DS_Store
+Thumbs.db

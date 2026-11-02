@@ -30,6 +30,10 @@ bash ~/pluto-termux/ferma.sh   # ferma
 
 Il server riparte da solo aprendo Termux, se risultava spento (vedi riga aggiunta a `~/.bashrc` da `installa.sh`). Niente avvio automatico all'accensione del tablet (stessa scelta fatta per Tablettone: Termux:Boot non funziona in modo affidabile su questo hardware, va aperto Termux almeno una volta).
 
+## Icona sul tablet
+
+C'è anche un'app Android dedicata (stesso schema di Tablettone) che da' un'icona vera invece di dover aprire Chrome a mano — vedi [`../android-kiosk/README.md`](../android-kiosk/README.md), incluso un limite noto quando Tablettone e Pluto si aprono entrambi per la prima volta dopo un riavvio del tablet.
+
 ## Limite noto: Web Serial non disponibile su Chrome Android
 
 Verificato (02/11/2026): il canale "radar" (sensore a ultrasuoni via Arduino, Web Serial API) **non funziona su Chrome Android** — il pulsante "Collega sensore seriale" mostra "Seriale non supportata". È una limitazione del browser su mobile, non del nostro codice. **Web MIDI invece dovrebbe funzionare** (raggi/tavolette via eobody) — va verificato con l'eobody collegato al tablet via USB-OTG.
