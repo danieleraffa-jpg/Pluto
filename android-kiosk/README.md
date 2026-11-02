@@ -6,7 +6,8 @@ Stesso schema dell'app Tablettone (`C:\Tablettone\android-kiosk\`): una piccola 
 
 - Apre `http://127.0.0.1:5173` (il server Pluto su Termux, vedi [`../termux/README.md`](../termux/README.md)) a schermo intero, senza barra degli indirizzi.
 - Se il server è spento, apre Termux (che lo riavvia da solo, vedi `termux/avvio-da-app.sh`) e torna automaticamente sull'app appena pronto.
-- Si blocca sullo schermo (screen pinning) una volta caricato, per evitare uscite accidentali — tocca 5 volte rapide nell'angolo in alto a sinistra per uscire o cambiare indirizzo server (es. per puntare al PC durante lo sviluppo, invece che al tablet stesso).
+- Si blocca sullo schermo (screen pinning) una volta caricato, per evitare uscite accidentali — tocca 5 volte rapide nell'angolo in alto a sinistra per uscire, cambiare indirizzo server (es. per puntare al PC durante lo sviluppo, invece che al tablet stesso), o richiedere di nuovo l'aggiunta dell'icona alla Home.
+- Al primo avvio chiede da sola al launcher di aggiungersi alla Home (popup di conferma di sistema) — utile su launcher che supportano questa richiesta standard di Android; su questo tablet non ha funzionato (vedi sotto), ma non fa danno tentarla.
 
 ## Compilare e installare
 
@@ -23,12 +24,12 @@ L'APK compilato non è incluso nel repository (è un artefatto generato, vedi `.
 
 ## Mettere l'icona sulla Home
 
-L'installazione (`adb install`) mette l'app nel cassetto delle app, non sulla Home — va aggiunta manualmente una volta: apri il cassetto app, tieni premuta l'icona "Pluto", trascinala sulla Home. Stesso procedimento già fatto per "Tablettone".
+L'installazione (`adb install`) mette l'app nel cassetto delle app, non sulla Home — va aggiunta manualmente una volta: apri il cassetto app, tieni premuta l'icona "Pluto", trascinala sulla Home.
 
-## Limite noto: conflitto con Tablettone dopo un riavvio completo del tablet
+**Sul launcher di questo tablet (AUMI AI OS) il trascinamento normale non funziona finché è attivo lo stile "Double Layer"** (cassetto app separato dalla Home) — l'icona si solleva ma non passa alla Home, resta nella lista. Soluzione trovata (02/11/2026): tieni premuto uno spazio vuoto della Home → **Impostazioni schermata Home** → **Launcher Style** → cambia da **Double Layer** a **Single Layer**. Dopo il cambio il trascinamento funziona normalmente. È un'impostazione del tablet, non dell'app: va fatta una sola volta e vale per tutte le app, non solo Pluto.
 
-Entrambe le app (Tablettone e Pluto) usano lo stesso meccanismo: se il loro server è spento aprono Termux, che li riavvia e torna all'app. Nell'uso normale (il server è già acceso, es. il tablet non è stato appena riavviato) questo non succede: l'icona apre l'app direttamente, senza passare da Termux.
+## Convivenza con Tablettone (risolto, 02/11/2026)
 
-**Solo subito dopo un riavvio completo del tablet**, quando Termux deve far ripartire *entrambi* i server da zero, può capitare che **la prima app ad aprirsi per prima si blocchi sullo schermo e impedisca all'altra di prendere il suo posto** (il blocco schermo di Android impedisce il cambio app finché non si sblocca). Non è un bug del codice, è un conflitto tra le due app che condividono la stessa istanza di Termux.
+Tablettone e Pluto condividono la stessa istanza di Termux sul tablet. In origine, subito dopo un riavvio completo del tablet (quando entrambi i server erano spenti insieme), le due app si contendevano lo schermo: quella che si bloccava per prima impediva il passaggio all'altra.
 
-Soluzione pratica se capita: tocca 5 volte rapide nell'angolo in alto a sinistra dell'app che si è aperta per sbagliare, scegli "Esci dalla kiosk mode", poi apri di nuovo l'icona giusta — a quel punto il suo server è comunque già partito e si aprirà subito senza passare da Termux.
+**Risolto togliendo il "ritorno automatico in primo piano" dagli script di avvio di entrambe le app** (`termux/avvio-da-app.sh`, sia qui che in `C:\Tablettone\termux\`): ora, se Termux deve far ripartire i server da zero, li avvia entrambi in silenzio senza che nessuna delle due app si blocchi sullo schermo da sola. L'utente tocca semplicemente l'icona che vuole, che si apre subito perché il suo server è già pronto. Nessun conflitto possibile, verificato ripetendo più volte lo scenario "riavvio del tablet" via adb.

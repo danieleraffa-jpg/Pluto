@@ -20,6 +20,9 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -82,6 +85,33 @@ class MainActivity : AppCompatActivity() {
         // Di default il server gira sul tablet stesso (Termux, vedi termux/README.md):
         // nessuna configurazione al primo avvio. Un server remoto si imposta col gesto nascosto.
         loadServer(serverUrl())
+
+        // Il trascinamento manuale dell'icona dal cassetto app alla Home non funziona
+        // su tutti i launcher (es. quello del Freeski C12): offriamo una sola volta
+        // all'avvio la richiesta "ufficiale" di Android, che apre un popup di conferma
+        // con un tasto solo. Ripetibile a mano dal gesto nascosto (vedi showSettingsDialog).
+        if (!prefs.getBoolean(KEY_OFFERED_PIN, false)) {
+            prefs.edit().putBoolean(KEY_OFFERED_PIN, true).apply()
+            requestPinShortcut()
+        }
+    }
+
+    /** Chiede al launcher di aggiungere l'icona alla Home, con conferma dell'utente. */
+    private fun requestPinShortcut() {
+        if (!ShortcutManagerCompat.isRequestPinShortcutSupported(this)) {
+            Toast.makeText(
+                this,
+                "Il launcher non supporta l'aggiunta diretta: trascina l'icona a mano dal cassetto app",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+        val shortcut = ShortcutInfoCompat.Builder(this, "pluto_home")
+            .setShortLabel(getString(R.string.app_name))
+            .setIcon(IconCompat.createWithResource(this, R.mipmap.ic_launcher))
+            .setIntent(Intent(this, MainActivity::class.java).setAction(Intent.ACTION_MAIN))
+            .build()
+        ShortcutManagerCompat.requestPinShortcut(this, shortcut, null)
     }
 
     private fun usesLocalServer(): Boolean =
@@ -209,6 +239,10 @@ class MainActivity : AppCompatActivity() {
             stopKioskAndFinish()
         }
 
+        builder.setNegativeButton("Aggiungi icona a Home") { _, _ ->
+            requestPinShortcut()
+        }
+
         builder.show()
     }
 
@@ -265,6 +299,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val KEY_OFFERED_PIN = "offered_pin_shortcut"
         private const val STARTING_PAGE_HTML =
             "<html><body style='background:#000;color:#fff;font-family:sans-serif;" +
                 "display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>" +
