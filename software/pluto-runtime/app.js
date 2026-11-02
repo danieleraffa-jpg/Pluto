@@ -459,9 +459,49 @@
   }
 
   // ---------------------------------------------------------------------
+  // Modalita' tecnica: nasconde/mostra il monitor MIDI e le istruzioni da
+  // tastiera. Di default sono nascosti - chi usa il tablet in sessione con
+  // un paziente deve vedere solo i riquadri grandi, non un log di debug.
+  // La scelta viene ricordata (per questo dispositivo/browser) cosi' non
+  // bisogna riattivarla ogni volta.
+  // ---------------------------------------------------------------------
+
+  function initTechToggle() {
+    const button = document.getElementById("techToggle");
+    const panel = document.getElementById("debugPanel");
+    if (!button || !panel) return;
+
+    let enabled = false;
+    try {
+      enabled = localStorage.getItem("pluto-modalita-tecnica") === "1";
+    } catch (err) {
+      // storage non disponibile (es. navigazione privata): va bene, si parte da spento
+    }
+
+    function apply() {
+      panel.hidden = !enabled;
+      button.setAttribute("aria-pressed", String(enabled));
+      button.classList.toggle("status-button--active", enabled);
+    }
+
+    button.addEventListener("click", () => {
+      enabled = !enabled;
+      apply();
+      try {
+        localStorage.setItem("pluto-modalita-tecnica", enabled ? "1" : "0");
+      } catch (err) {
+        // ignorato: la preferenza semplicemente non viene ricordata
+      }
+    });
+
+    apply();
+  }
+
+  // ---------------------------------------------------------------------
 
   buildStage();
   initWebMidi();
   initKeyboardSimulation();
   initRadarSerial();
+  initTechToggle();
 })();

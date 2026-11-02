@@ -9,10 +9,11 @@
 <body>
 
   <header>
-    <h1>Pluto</h1>
+    <h1><span class="title-mark" aria-hidden="true">🪐</span> Pluto</h1>
     <div class="status-group">
-      <button id="radarConnect" class="status-button">Collega sensore seriale (radar)</button>
+      <button id="radarConnect" class="status-button">Collega sensore seriale</button>
       <div id="midiStatus" class="status">MIDI: inizializzazione…</div>
+      <button id="techToggle" class="status-button status-button--ghost" aria-pressed="false">Modalità tecnica</button>
     </div>
   </header>
 
@@ -21,23 +22,25 @@
          Pensato come primo feedback visivo per il paziente/l'educatore; i colori vengono da config/mapping.js -->
   </main>
 
-  <section id="midiMonitor">
-    <h2>Monitor MIDI grezzo</h2>
-    <p class="hint">
-      Mostra ogni messaggio ricevuto, anche su canali non ancora configurati in <code>config/mapping.js</code>.
-      Serve a scoprire su quale canale/numero manda davvero un jack dell'eobody collegandoci un sensore.
-    </p>
-    <div id="midiLog"></div>
-  </section>
+  <div id="debugPanel" class="debug-panel" hidden>
+    <section id="midiMonitor">
+      <h2>Monitor MIDI grezzo</h2>
+      <p class="hint">
+        Mostra ogni messaggio ricevuto, anche su canali non ancora configurati in <code>config/mapping.js</code>.
+        Serve a scoprire su quale canale/numero manda davvero un jack dell'eobody collegandoci un sensore.
+      </p>
+      <div id="midiLog"></div>
+    </section>
 
-  <footer>
-    <p>
-      <strong>Modalita' test da tastiera</strong> (finche' non e' collegato l'eobody III):
-      tasti <kbd>1</kbd>–<kbd>0</kbd> = Raggio 1, <kbd>Q</kbd>/<kbd>W</kbd> = Tavolette.
-      Clicca prima sulla pagina per attivare l'audio del browser.
-    </p>
-    <p class="hint">Mappatura suoni: <code>config/mapping.js</code> — modificabile senza toccare il codice.</p>
-  </footer>
+    <footer>
+      <p>
+        <strong>Modalita' test da tastiera</strong> (finche' non e' collegato l'eobody III):
+        tasti <kbd>1</kbd>–<kbd>0</kbd> = Raggio 1, <kbd>Q</kbd>/<kbd>W</kbd> = Tavolette.
+        Clicca prima sulla pagina per attivare l'audio del browser.
+      </p>
+      <p class="hint">Mappatura suoni: <code>config/mapping.js</code> — modificabile senza toccare il codice.</p>
+    </footer>
+  </div>
 
   <script src="config/mapping.js"></script>
   <script src="app.js"></script>

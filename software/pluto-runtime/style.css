@@ -1,117 +1,183 @@
 :root {
-  color-scheme: dark;
-  --bg: #11151c;
-  --panel: #1b212b;
-  --text: #e8ecf1;
-  --muted: #8b95a5;
+  color-scheme: light;
+  --bg: #faf6ef;
+  --panel: #ffffff;
+  --panel-soft: #f1ece0;
+  --text: #2b2440;
+  --muted: #756f8a;
+  --accent: #7c4fd6;
+  --border: #e6ded0;
 }
 
 * { box-sizing: border-box; }
 
+html { font-size: 16px; }
+
+/* su schermi piu' larghi (tablet in orizzontale) tutto un filo piu' grande,
+   per restare comodo da leggere/toccare a distanza */
+@media (min-width: 900px) {
+  html { font-size: 19px; }
+}
+
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, "Segoe UI", sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, "Noto Sans", sans-serif;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% -10%, #fde8d6, transparent),
+    radial-gradient(ellipse 60% 45% at 100% 0%, #e3f1ea, transparent),
+    var(--bg);
+  -webkit-tap-highlight-color: transparent;
 }
 
 header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  border-bottom: 1px solid #262e3a;
+  gap: 12px;
+  padding: 20px 28px;
 }
 
 h1 {
   margin: 0;
-  font-size: 1.4rem;
-  letter-spacing: 0.04em;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #221c38;
 }
 
-.status {
-  font-size: 0.9rem;
-  color: var(--muted);
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-}
-
-.status.ok { color: #7bd88f; }
-.status.warn { color: #e0b24a; }
+.title-mark { font-size: 1.3em; line-height: 1; }
 
 .status-group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
 
+.status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.status.ok { color: #1f8a53; }
+.status.warn { color: #b5790a; }
+
 .status-button {
   font: inherit;
   font-size: 0.85rem;
+  font-weight: 700;
   color: var(--text);
   background: var(--panel);
-  border: 1px solid #333c4a;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 10px 18px;
+  min-height: 44px; /* dimensione comoda per il tocco, non solo per il mouse */
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(43, 36, 64, 0.06);
+  transition: background-color 120ms ease, transform 80ms ease;
 }
 
-.status-button:hover:not(:disabled) { border-color: #4a5668; }
+.status-button:hover:not(:disabled) { background: var(--panel-soft); }
+.status-button:active:not(:disabled) { transform: scale(0.97); }
 .status-button:disabled { color: var(--muted); cursor: default; }
+
+.status-button--ghost {
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.status-button--ghost.status-button--active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #f2ecfc;
+}
 
 main#stage {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  padding: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 12px 28px 32px;
   align-content: start;
 }
 
 .channel-tile {
   background: var(--panel);
-  border-radius: 16px;
-  padding: 20px;
-  min-height: 140px;
+  border-radius: 24px;
+  padding: 24px;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 2px solid transparent;
-  transition: border-color 60ms linear, box-shadow 60ms linear;
+  border: 3px solid var(--border);
+  box-shadow: 0 6px 18px rgba(43, 36, 64, 0.08);
+  transition: border-color 80ms linear, box-shadow 80ms linear, transform 150ms ease, background-color 80ms linear;
 }
 
 .channel-tile .label {
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #221c38;
 }
 
 .channel-tile .type {
   color: var(--muted);
   font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
 }
 
 .channel-tile .note {
-  font-size: 1.6rem;
+  font-size: 2.1rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   align-self: flex-end;
+  color: var(--muted);
+  opacity: 0.45;
+  transition: opacity 80ms linear, color 80ms linear;
 }
 
-/* .active viene aggiunta/rimossa via JS a ogni nota — e' il feedback visivo immediato per il paziente */
+/* .active viene aggiunta/rimossa via JS a ogni nota — e' il feedback visivo
+   immediato per il paziente: il riquadro si riempie col colore del canale */
 .channel-tile.active {
-  border-color: var(--tile-color, #fff);
-  box-shadow: 0 0 0 6px color-mix(in srgb, var(--tile-color, #fff) 25%, transparent);
+  background-color: var(--tile-color);
+  border-color: var(--tile-color);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--tile-color) 45%, transparent);
+  transform: scale(1.02);
+}
+
+.channel-tile.active .label,
+.channel-tile.active .type,
+.channel-tile.active .note {
+  color: #fff;
+  opacity: 1;
+}
+
+.debug-panel {
+  padding: 0 28px 24px;
 }
 
 #midiMonitor {
-  margin: 0 24px 24px;
   padding: 16px 20px;
   background: var(--panel);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 
 #midiMonitor h2 {
@@ -125,9 +191,9 @@ main#stage {
   overflow-y: auto;
   font-family: "Consolas", "SF Mono", monospace;
   font-size: 0.82rem;
-  color: #c3cad6;
-  background: #11151c;
-  border-radius: 8px;
+  color: #463e5e;
+  background: var(--panel-soft);
+  border-radius: 10px;
   padding: 8px 12px;
 }
 
@@ -142,21 +208,20 @@ main#stage {
 }
 
 footer {
-  padding: 16px 24px;
-  border-top: 1px solid #262e3a;
+  padding: 16px 0 0;
   color: var(--muted);
   font-size: 0.85rem;
 }
 
 footer p { margin: 4px 0; }
 kbd {
-  background: #2a3240;
+  background: var(--panel-soft);
   border-radius: 4px;
   padding: 1px 6px;
   font-family: inherit;
 }
 .hint code {
-  background: #2a3240;
+  background: var(--panel-soft);
   border-radius: 4px;
   padding: 1px 6px;
 }
