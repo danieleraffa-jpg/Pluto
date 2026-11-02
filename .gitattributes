@@ -1,0 +1,6 @@
+# Gli script Termux girano sul tablet (Android/Linux): devono restare LF,
+# altrimenti la riga "shebang" (#!/...) si rompe e lo script non parte.
+# Senza questa regola, su Windows git li converte in CRLF al prossimo commit.
+termux/*.sh text eol=lf
+termux/*.js text eol=lf
+firmware/**/*.ino text eol=lf

@@ -29,9 +29,9 @@ Per il sensore radar: carica [`firmware/distanza-ultrasuoni/distanza-ultrasuoni.
 
 ## Uso su tablet
 
-Decisione del progetto (18/10/2026): niente raggi/tavolette wireless (latenza + complessità, vedi discussione nel repo), ma **il runtime gira su un tablet Android** collegato via cavo USB-OTG all'eobody/Arduino — stessa app, stesso Chrome, nessuna riscrittura dell'architettura. Dispositivo di riferimento attuale: tablet **AUMI AI OS**, già in uso da CRAMS per la versione rivista di Tablettone.
+Decisione del progetto (18/10/2026): niente raggi/tavolette wireless (latenza + complessità, vedi discussione nel repo), ma **il runtime gira su un tablet Android** collegato via cavo USB-OTG all'eobody/Arduino — stessa app, stesso Chrome, nessuna riscrittura dell'architettura. Dispositivo di riferimento attuale: tablet **AUMI AI OS** (Freeski C12), già in uso da CRAMS per la versione rivista di Tablettone.
 
-Non ancora verificato sul dispositivo reale: aprire pluto-runtime in Chrome sul tablet, collegare l'eobody/Arduino via USB-OTG, controllare che Web MIDI riconosca il dispositivo come su PC.
+**Verificato e funzionante (02/11/2026)**: Pluto gira in autonomia sul tablet, via Termux, senza bisogno del PC né di una rete — stesso schema già usato per Tablettone. Istruzioni complete in [`termux/README.md`](../../termux/README.md). Limite scoperto testando: **Web Serial non è disponibile su Chrome Android**, quindi il canale "radar" via Arduino non funziona sul tablet (resta utilizzabile su PC). Web MIDI (eobody) dovrebbe funzionare — da confermare collegando l'eobody vero via USB-OTG al tablet.
 
 ## Cosa modificare per cambiare suoni/numero di oggetti
 
@@ -42,4 +42,4 @@ Tutto in [`config/mapping.js`](config/mapping.js) — commentato, pensato per es
 - Suoni veri al posto dei campioni segnaposto (scelti dal musicista) — basta sostituire i file in `assets/samples/`, l'infrastruttura per suonarli c'è già.
 - Risolvere l'intermittenza degli switch sul lato B dell'eobody (pull-up resistivo, vedi [`hardware/eobody-iii/README.md`](../../hardware/eobody-iii/README.md)) e testare un sensore continuo vero sul lato A.
 - Misurare la latenza reale end-to-end con l'hardware collegato (priorità indicata dal musicista consultato).
-- Verificare pluto-runtime sul tablet AUMI AI OS vero (USB-OTG, Web MIDI, tocco) e aggiustare il design in base a quello che si vede sul dispositivo reale.
+- Verificare Web MIDI sul tablet con l'eobody vero collegato via USB-OTG (la pagina gira già sul tablet in autonomia, manca solo questo test con l'hardware).
