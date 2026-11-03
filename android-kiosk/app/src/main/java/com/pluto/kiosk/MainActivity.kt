@@ -141,6 +141,22 @@ class MainActivity : AppCompatActivity() {
         }.start()
     }
 
+    /**
+     * Riporta questa app in primo piano da sola, senza passare per Termux o per
+     * l'altra app (Tablettone): e' una cosa che Pluto fa a se stesso quando il
+     * SUO server e' pronto, non un'azione imposta dall'esterno via "am start" nello
+     * script di avvio (quello causava il conflitto, vedi android-kiosk/README.md).
+     * Funziona solo se questa activity esiste gia' (l'utente ha toccato l'icona di
+     * Pluto): se non e' stata toccata, non esiste nulla da riportare in primo piano,
+     * quindi nessun rischio di contendersi lo schermo con Tablettone dopo un riavvio.
+     */
+    private fun bringSelfToFront() {
+        startActivity(
+            Intent(this, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        )
+    }
+
     private fun openTermux() {
         try {
             startActivity(
@@ -172,8 +188,10 @@ class MainActivity : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 progressBar.visibility = View.GONE
                 if (url != null && url.startsWith("http")) {
+                    val tornaDaTermux = termuxLaunched
                     serverLoaded = true
                     termuxLaunched = false
+                    if (tornaDaTermux) bringSelfToFront()
                     startKioskLock()
                 }
             }
@@ -200,11 +218,42 @@ class MainActivity : AppCompatActivity() {
     private fun scheduleRetry() {
         progressBar.visibility = View.VISIBLE
         retryRunnable?.let { retryHandler.removeCallbacks(it) }
-        val runnable = Runnable {
-            loadServer(serverUrl())
-        }
+        val runnable = Runnable { retryLoad() }
         retryRunnable = runnable
         retryHandler.postDelayed(runnable, 3000)
+    }
+
+    /**
+     * Ritenta il caricamento. Per il server locale non chiede subito alla WebView di
+     * ricaricare: mentre l'app e' in background (dietro Termux) la WebView non porta
+     * mai a termine il caricamento, ne' con successo ne' con errore, quindi un retry
+     * basato sui suoi eventi resterebbe bloccato per sempre. Si controlla invece la
+     * porta con una semplice connessione di rete (funziona anche in background) e solo
+     * quando risponde si riporta l'app in primo piano e si carica davvero la pagina.
+     */
+    private fun retryLoad() {
+        val url = serverUrl()
+        if (!usesLocalServer()) {
+            loadServer(url)
+            return
+        }
+        val uri = Uri.parse(url)
+        Thread {
+            val listening = try {
+                Socket().use { it.connect(InetSocketAddress(uri.host, uri.port.takeIf { p -> p > 0 } ?: 80), 1000) }
+                true
+            } catch (_: Exception) {
+                false
+            }
+            runOnUiThread {
+                if (listening) {
+                    bringSelfToFront()
+                    loadServer(url)
+                } else {
+                    scheduleRetry()
+                }
+            }
+        }.start()
     }
 
     private fun serverUrl(): String =

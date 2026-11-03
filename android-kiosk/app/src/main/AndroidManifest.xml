@@ -3,6 +3,14 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--
+      Serve solo per essere esenti dal blocco Android "background activity
+      launch": senza, l'app non puo' riportarsi da sola in primo piano dopo
+      aver aperto Termux per far ripartire il server (vedi bringSelfToFront
+      in MainActivity.kt e android-kiosk/README.md). Non viene usata per
+      disegnare overlay.
+    -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:allowBackup="false"
