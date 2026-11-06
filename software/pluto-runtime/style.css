@@ -88,6 +88,26 @@ h1 {
   cursor: pointer;
 }
 
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 18px;
+  box-shadow: 0 2px 6px rgba(43, 36, 64, 0.06);
+}
+
+.volume-control input[type="range"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  width: 110px;
+}
+
 .status {
   font-size: 0.85rem;
   font-weight: 600;
@@ -132,6 +152,17 @@ h1 {
   background: #f2ecfc;
 }
 
+/* "Silenzia tutto": un pulsante di sicurezza, colorato apposta per
+   distinguerlo a colpo d'occhio dagli altri controlli (non uno stato da
+   attivare/disattivare come gli altri, e' un'azione immediata). */
+.status-button--warn {
+  color: #a6440f;
+  background: #fdeee3;
+  border-color: #f2c9a3;
+}
+
+.status-button--warn:hover:not(:disabled) { background: #fbe0cc; }
+
 main#stage {
   flex: 1;
   display: flex;
@@ -152,11 +183,31 @@ main#stage {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 3px solid var(--border);
+  /* Bordo gia' tinto del colore del canale anche a riposo (non solo da
+     attivo): e' quello che fa vedere a colpo d'occhio che un preset e'
+     cambiato, senza dover toccare nulla per sentirne la differenza. */
+  border: 3px solid color-mix(in srgb, var(--tile-color) 35%, var(--border));
   box-shadow: 0 6px 18px rgba(43, 36, 64, 0.08);
   position: relative;
   overflow: hidden;
+  cursor: pointer; /* "tocca per provare", vedi previewChannel in app.js */
   transition: border-color 80ms linear, box-shadow 80ms linear, transform 150ms ease, background-color 80ms linear;
+}
+
+.channel-tile:hover { box-shadow: 0 8px 22px rgba(43, 36, 64, 0.12); }
+.channel-tile:active { transform: scale(0.98); }
+
+.channel-tile__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.icon-emoji {
+  font-size: 2rem;
+  line-height: 1;
+  opacity: 0.8;
 }
 
 .channel-tile .label {
@@ -208,6 +259,8 @@ main#stage {
   color: #fff;
   opacity: 1;
 }
+
+.channel-tile.active .icon-emoji { opacity: 1; }
 
 /* Modalita' "Feedback vivace" (opt-in, vedi initFeedbackToggle in app.js):
    in piu' al riempimento colore (sempre attivo e istantaneo, non dipende

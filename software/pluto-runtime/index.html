@@ -25,10 +25,15 @@
         <span class="preset-picker__label">Set di suoni</span>
         <select id="presetSelect" aria-label="Set di suoni attivo"></select>
       </label>
+      <label class="volume-control">
+        <span class="volume-control__label">Volume</span>
+        <input type="range" id="volumeSlider" min="0" max="100" value="80" aria-label="Volume generale" />
+      </label>
       <button id="radarConnect" class="status-button">Collega sensore seriale</button>
       <div id="midiStatus" class="status">MIDI: inizializzazione…</div>
       <button id="feedbackToggle" class="status-button status-button--ghost" aria-pressed="false">Feedback sobrio</button>
       <button id="techToggle" class="status-button status-button--ghost" aria-pressed="false">Modalità tecnica</button>
+      <button id="stopAll" class="status-button status-button--warn">Silenzia tutto</button>
     </div>
   </header>
 
@@ -53,6 +58,7 @@
         tasti <kbd>1</kbd>–<kbd>0</kbd> = Raggio 1, <kbd>Q</kbd>/<kbd>W</kbd> = Tavolette.
         Clicca prima sulla pagina per attivare l'audio del browser.
       </p>
+      <p class="hint">Tocca un riquadro per provarne il suono (utile anche su tablet, senza tastiera).</p>
       <p class="hint">Mappatura suoni: <code>config/mapping.js</code> — modificabile senza toccare il codice.</p>
     </footer>
   </div>

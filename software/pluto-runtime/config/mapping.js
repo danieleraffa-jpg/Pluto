@@ -49,6 +49,11 @@
 // Per cambiare le note disponibili: cambia i numeri in "scale" (sono note
 // MIDI, 60 = Do centrale). Per cambiare il colore del feedback visivo:
 // cambia "color" (formato esadecimale, es. "#e0574a").
+//
+// Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro,
+// utile a pazienti che non leggono per riconoscere i canali a colpo
+// d'occhio — a scelta libera, non serve che corrisponda letteralmente al
+// suono (es. 🔔 per il campanello, 🪵 per il legno).
 
 window.PLUTO_PRESETS = {
 
@@ -67,6 +72,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/campana.wav",
           waveform: "sine", // usato solo se "sample" manca o non si carica
           color: "#e0574a",
+          icon: "🔔",
         },
         2: {
           label: "Raggio 2",
@@ -76,6 +82,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/marimba.wav",
           waveform: "triangle",
           color: "#3c8dbc",
+          icon: "🎶",
         },
         3: {
           label: "Tavoletta 1",
@@ -85,6 +92,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/legno.wav",
           waveform: "square",
           color: "#2ca25f",
+          icon: "🪵",
         },
         4: {
           label: "Tavoletta 2",
@@ -94,6 +102,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/metallo.wav",
           waveform: "sawtooth",
           color: "#d9a441",
+          icon: "⚙️",
         },
         // "radar" non e' un canale MIDI (non ha un numero 1-16): e' un sensore
         // a ultrasuoni HC-SR04 collegato via USB seriale a un Arduino (vedi
@@ -112,6 +121,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/cristallo.wav",
           waveform: "triangle",
           color: "#8858c8",
+          icon: "🔮",
         },
         // "switchSeriale" nemmeno questo e' un canale MIDI: e' un interruttore
         // (es. mini switch su breadboard) collegato a un pin digitale della
@@ -126,6 +136,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/legno.wav",
           waveform: "square",
           color: "#e0a830",
+          icon: "🪵",
         },
       },
     },
@@ -146,6 +157,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/cristallo.wav",
           waveform: "sine",
           color: "#8858c8",
+          icon: "🔮",
         },
         2: {
           label: "Raggio 2",
@@ -155,6 +167,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/marimba.wav",
           waveform: "triangle",
           color: "#3c8dbc",
+          icon: "🎶",
         },
         3: {
           label: "Tavoletta 1",
@@ -164,6 +177,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/campana.wav",
           waveform: "square",
           color: "#e0574a",
+          icon: "🔔",
         },
         4: {
           label: "Tavoletta 2",
@@ -173,6 +187,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/metallo.wav",
           waveform: "sawtooth",
           color: "#d9a441",
+          icon: "⚙️",
         },
         radar: {
           label: "Radar distanza",
@@ -184,6 +199,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/cristallo.wav",
           waveform: "triangle",
           color: "#2ca25f",
+          icon: "🌙",
         },
         switchSeriale: {
           label: "Switch Arduino",
@@ -193,6 +209,7 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/legno.wav",
           waveform: "square",
           color: "#e0a830",
+          icon: "🪵",
         },
       },
     },

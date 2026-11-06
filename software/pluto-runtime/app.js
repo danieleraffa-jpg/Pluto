@@ -104,15 +104,44 @@
       tile.style.setProperty("--tile-color", cfg.color);
       const icon = TYPE_ICONS[cfg.type] || "";
       tile.innerHTML = `
-        <div>
-          <div class="label">${cfg.label}</div>
-          <div class="type">${icon}<span>${cfg.type}</span></div>
+        <div class="channel-tile__top">
+          <div>
+            <div class="label">${cfg.label}</div>
+            <div class="type">${icon}<span>${cfg.type}</span></div>
+          </div>
+          ${cfg.icon ? `<div class="icon-emoji" aria-hidden="true">${cfg.icon}</div>` : ""}
         </div>
         <div class="note">–</div>
       `;
+      // "Tocca per provare": utile all'educatore per sentire/controllare i
+      // suoni di un preset senza bisogno di tastiera o hardware collegato —
+      // per una tavoletta e' identico a una pressione vera (stessa logica
+      // in playOneShot, incluse le modalita' sequence/latching); per un
+      // raggio e' solo un'anteprima breve, non interferisce con la lettura
+      // della posizione reale (vedi previewChannel).
+      tile.addEventListener("click", () => previewChannel(ch, cfg));
       stage.appendChild(tile);
       tileEls[ch] = tile;
     }
+  }
+
+  function previewChannel(channel, cfg) {
+    ensureAudioContext();
+    if (cfg.type === "tavoletta") {
+      playOneShot(channel, cfg);
+      return;
+    }
+    // Raggio: nessuna posizione reale da leggere qui, quindi facciamo
+    // sentire una nota della scala (una diversa a ogni tocco, cosi' si
+    // puo' farsi un'idea dell'intera scala), come un colpo breve.
+    const state = channelState[channel];
+    const note = cfg.scale[state.sequenceIndex % cfg.scale.length];
+    state.sequenceIndex += 1;
+    triggerNote(channel, cfg, note);
+    setTimeout(() => {
+      if (!cfg.sample) stopVoice(channel, 0.2);
+      if (state.lastDivision === null) setTileActive(channel, note, false);
+    }, 250);
   }
 
   function setTileActive(channel, midiNote, on) {
@@ -141,11 +170,15 @@
   // ---------------------------------------------------------------------
 
   let audioCtx = null;
+  let masterGain = null; // tutto passa di qui: un solo nodo per il volume generale (vedi initVolumeControl)
   const voices = {}; // channel -> { oscillator, gain }
 
   function ensureAudioContext() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = readStoredVolume();
+      masterGain.connect(audioCtx.destination);
     }
     if (audioCtx.state === "suspended") audioCtx.resume();
     return audioCtx;
@@ -169,7 +202,7 @@
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.25, now + 0.01);
 
-    osc.connect(gain).connect(ctx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start();
 
     voices[channel] = { osc, gain };
@@ -221,7 +254,7 @@
       source.buffer = buffer;
       source.playbackRate.value = Math.pow(2, (midiNote - SAMPLE_BASE_NOTE) / 12);
       gain.gain.value = 0.9;
-      source.connect(gain).connect(ctx.destination);
+      source.connect(gain).connect(masterGain);
       source.start();
     } catch (err) {
       console.error("Campione non caricato:", cfg.sample, err);
@@ -638,6 +671,67 @@
   }
 
   // ---------------------------------------------------------------------
+  // "Silenzia tutto": spegne subito ogni suono attivo e riporta tutti i
+  // riquadri a riposo. Pensato come sicurezza in sessione (es. una
+  // tavoletta "latching" rimasta accesa per sbaglio), non serve passare
+  // canale per canale.
+  // ---------------------------------------------------------------------
+
+  function stopAll() {
+    for (const [ch, cfg] of Object.entries(MAPPING.channels)) {
+      const state = channelState[ch];
+      state.lastDivision = null;
+      state.activeNote = null;
+      state.latchedOn = false;
+      if (!cfg.sample) stopVoice(ch);
+      setTileActive(ch, null, false);
+    }
+  }
+
+  function initStopAll() {
+    const button = document.getElementById("stopAll");
+    if (!button) return;
+    button.addEventListener("click", stopAll);
+  }
+
+  // ---------------------------------------------------------------------
+  // Volume generale: un solo cursore controlla il guadagno master (vedi
+  // masterGain in ensureAudioContext) a cui tutte le voci/campioni sono
+  // collegati — non serve toccare il volume di ogni canale singolarmente.
+  // Ricordato tra una sessione e l'altra come le altre preferenze sopra.
+  // ---------------------------------------------------------------------
+
+  const VOLUME_STORAGE_KEY = "pluto-volume";
+
+  function readStoredVolume() {
+    try {
+      const raw = localStorage.getItem(VOLUME_STORAGE_KEY);
+      const value = raw === null ? NaN : Number(raw);
+      if (Number.isFinite(value) && value >= 0 && value <= 1) return value;
+    } catch (err) {
+      // storage non disponibile: volume di default
+    }
+    return 0.8;
+  }
+
+  function initVolumeControl() {
+    const slider = document.getElementById("volumeSlider");
+    if (!slider) return;
+
+    slider.value = String(Math.round(readStoredVolume() * 100));
+
+    slider.addEventListener("input", () => {
+      const value = Number(slider.value) / 100;
+      if (masterGain) masterGain.gain.value = value;
+      try {
+        localStorage.setItem(VOLUME_STORAGE_KEY, String(value));
+      } catch (err) {
+        // ignorato: la preferenza semplicemente non viene ricordata
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------
 
   let savedPresetId = null;
   try {
@@ -653,4 +747,6 @@
   initRadarSerial();
   initTechToggle();
   initFeedbackToggle();
+  initStopAll();
+  initVolumeControl();
 })();
