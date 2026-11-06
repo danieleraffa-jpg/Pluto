@@ -136,6 +136,13 @@ header a.status-button {
   color: var(--text);
 }
 
+.field input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
 .field input[type="range"] {
   accent-color: var(--accent);
   cursor: pointer;

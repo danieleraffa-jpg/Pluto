@@ -395,6 +395,53 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       const sampleField = addField("Campione audio (.wav, facoltativo)", sampleInput);
       sampleField.appendChild(datalist);
 
+      // Caricamento diretto: scrive il file su assets/samples/ tramite il
+      // piccolo endpoint del server locale (vedi termux/pluto-server.js),
+      // cosi' funziona anche sul tablet, non solo da PC. Se il server in
+      // uso non lo supporta (es. il server di sviluppo sul PC durante i
+      // test), resta comunque possibile copiare il file a mano e scrivere
+      // il percorso nel campo sopra.
+      const uploadButton = document.createElement("button");
+      uploadButton.type = "button";
+      uploadButton.className = "status-button";
+      uploadButton.textContent = "Carica file audio…";
+      const uploadInput = document.createElement("input");
+      uploadInput.type = "file";
+      uploadInput.accept = ".wav,.mp3,.ogg,audio/*";
+      uploadInput.style.display = "none";
+      uploadButton.addEventListener("click", () => uploadInput.click());
+      uploadInput.addEventListener("change", async () => {
+        const file = uploadInput.files[0];
+        if (!file) return;
+        uploadButton.disabled = true;
+        uploadButton.textContent = "Caricamento…";
+        try {
+          const res = await fetch(`/api/upload-sample/${encodeURIComponent(file.name)}`, {
+            method: "POST",
+            headers: { "Content-Type": file.type || "application/octet-stream" },
+            body: file,
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          cfg.sample = data.path;
+          sampleInput.value = data.path;
+          markDirty();
+          saveStatus.textContent = `Campione caricato in ${data.path} — ricordati di salvare il preset`;
+        } catch (err) {
+          alert(
+            "Caricamento non riuscito: " +
+              err.message +
+              "\n\nSe questo e' il server di sviluppo sul PC (non il tablet), il caricamento diretto non e' supportato: copia il file a mano in assets/samples/ e scrivi il percorso nel campo qui sopra."
+          );
+        } finally {
+          uploadButton.disabled = false;
+          uploadButton.textContent = "Carica file audio…";
+          uploadInput.value = "";
+        }
+      });
+      sampleField.appendChild(uploadButton);
+      sampleField.appendChild(uploadInput);
+
       // Forma d'onda
       const waveformSelect = document.createElement("select");
       for (const w of ["sine", "triangle", "square", "sawtooth"]) {
@@ -444,10 +491,13 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       row2.appendChild(iconField);
       channelForm.appendChild(row2);
 
-      // Volume (mix di base): l'educatore puo' ritoccarlo "al momento" dal
-      // pannello Mixer canali dell'app, ma solo per quella sessione — qui
-      // si salva in modo permanente nel preset.
+      // Volume/Muto/Pan (mix di base): l'educatore puo' ritoccarli "al
+      // momento" dal pannello Mixer canali dell'app, ma solo per quella
+      // sessione — qui si salvano in modo permanente nel preset.
       if (typeof cfg.volume !== "number") cfg.volume = 1;
+      if (typeof cfg.muted !== "boolean") cfg.muted = false;
+      if (typeof cfg.pan !== "number") cfg.pan = 0;
+
       const volumeRow = document.createElement("div");
       volumeRow.className = "note-add";
       const volumeInput = document.createElement("input");
@@ -470,6 +520,51 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       volumeField.innerHTML = "<label>Volume canale (mix di base)</label>";
       volumeField.appendChild(volumeRow);
       channelForm.appendChild(volumeField);
+
+      // Muto: parte silenziato di default (restano colori/feedback visivo)
+      const mutedLabel = document.createElement("label");
+      mutedLabel.className = "note-add";
+      mutedLabel.style.cursor = "pointer";
+      const mutedInput = document.createElement("input");
+      mutedInput.type = "checkbox";
+      mutedInput.checked = cfg.muted;
+      mutedInput.addEventListener("change", () => {
+        cfg.muted = mutedInput.checked;
+        markDirty();
+      });
+      const mutedText = document.createElement("span");
+      mutedText.textContent = "Parte silenziato (muto) di default";
+      mutedLabel.appendChild(mutedInput);
+      mutedLabel.appendChild(mutedText);
+      const mutedField = document.createElement("div");
+      mutedField.className = "field";
+      mutedField.innerHTML = "<label>Muto</label>";
+      mutedField.appendChild(mutedLabel);
+      channelForm.appendChild(mutedField);
+
+      // Pan: bilanciamento sinistra/destra (ha senso solo con impianto stereo)
+      const panRow = document.createElement("div");
+      panRow.className = "note-add";
+      const panInput = document.createElement("input");
+      panInput.type = "range";
+      panInput.min = "-100";
+      panInput.max = "100";
+      panInput.value = String(Math.round(cfg.pan * 100));
+      const panValue = document.createElement("span");
+      panValue.className = "note-chip";
+      panValue.textContent = cfg.pan === 0 ? "Centro" : cfg.pan < 0 ? `Sinistra ${Math.round(-cfg.pan * 100)}%` : `Destra ${Math.round(cfg.pan * 100)}%`;
+      panInput.addEventListener("input", () => {
+        cfg.pan = Number(panInput.value) / 100;
+        panValue.textContent = cfg.pan === 0 ? "Centro" : cfg.pan < 0 ? `Sinistra ${Math.round(-cfg.pan * 100)}%` : `Destra ${Math.round(cfg.pan * 100)}%`;
+        markDirty();
+      });
+      panRow.appendChild(panInput);
+      panRow.appendChild(panValue);
+      const panField = document.createElement("div");
+      panField.className = "field";
+      panField.innerHTML = "<label>Pan (bilanciamento sinistra/destra)</label>";
+      panField.appendChild(panRow);
+      channelForm.appendChild(panField);
 
       // Prova
       const previewRow = document.createElement("div");
@@ -624,9 +719,11 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
 // Campo "trigger": raggio -> "retrigger" (default) o "latching". tavoletta
 // -> "oneshot" (default), "sequence" (richiede "scale") o "latching".
 //
-// Campo "volume" (0-1, default 1): mix di base tra i canali — modificabile
-// anche "al momento" dal pannello Mixer canali dell'app, ma solo per quella
-// sessione; qui invece si salva in modo permanente nel preset.
+// Campo "volume" (0-1, default 1), "muted" (default false) e "pan" (-1-1,
+// default 0): mix di base tra i canali — modificabili anche "al momento"
+// dal pannello Mixer canali dell'app (che aggiunge anche un "Solo" per
+// isolare un canale, mai salvato qui), ma solo per quella sessione; qui
+// invece si salvano in modo permanente nel preset.
 //
 // Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro.
 `;
@@ -652,6 +749,8 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       if (cfg.sample) lines.push(`          sample: ${jsString(cfg.sample)},`);
       lines.push(`          waveform: ${jsString(cfg.waveform || "sine")},`);
       lines.push(`          volume: ${typeof cfg.volume === "number" ? cfg.volume : 1},`);
+      lines.push(`          muted: ${cfg.muted ? "true" : "false"},`);
+      lines.push(`          pan: ${typeof cfg.pan === "number" ? cfg.pan : 0},`);
       lines.push(`          color: ${jsString(cfg.color || "#7c4fd6")},`);
       if (cfg.icon) lines.push(`          icon: ${jsString(cfg.icon)},`);
       return lines.join("\n");

@@ -53,10 +53,15 @@
 // Campo "volume" (facoltativo, da 0 a 1, default 1): il bilanciamento di
 // questo canale rispetto agli altri — un mix di base pensato per chi
 // prepara il preset (es. un campione naturalmente piu' forte di un altro).
-// Il musicista lo regola qui o nell'editor visuale; chi usa l'app in
-// sessione puo' comunque ritoccarlo al momento dal pannello "Mixer canali"
-// (nascosto di default), ma SOLO per quella sessione: non tocca questo
-// file e si perde al ricaricamento della pagina.
+// Campo "muted" (facoltativo, default false): il canale parte silenziato
+// di default (restano i colori/il feedback visivo, ma niente suono). Campo
+// "pan" (facoltativo, da -1 a 1, default 0): posizione tra le due casse,
+// ha senso solo con un impianto audio davvero stereo. Tutti e tre si
+// regolano qui o nell'editor visuale; chi usa l'app in sessione puo'
+// comunque ritoccarli al momento dal pannello "Mixer canali" (nascosto di
+// default, con in piu' un "Solo" per isolare un canale), ma SOLO per
+// quella sessione: non toccano questo file e si perdono al ricaricamento
+// della pagina.
 //
 // Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro,
 // utile a pazienti che non leggono per riconoscere i canali a colpo
@@ -80,6 +85,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/campana.wav",
           waveform: "sine", // usato solo se "sample" manca o non si carica
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#e0574a",
           icon: "🔔",
         },
@@ -91,6 +98,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/marimba.wav",
           waveform: "triangle",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#3c8dbc",
           icon: "🎶",
         },
@@ -102,6 +111,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/legno.wav",
           waveform: "square",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#2ca25f",
           icon: "🪵",
         },
@@ -113,6 +124,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/metallo.wav",
           waveform: "sawtooth",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#d9a441",
           icon: "⚙️",
         },
@@ -133,6 +146,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/cristallo.wav",
           waveform: "triangle",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#8858c8",
           icon: "🔮",
         },
@@ -149,6 +164,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/legno.wav",
           waveform: "square",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#e0a830",
           icon: "🪵",
         },
@@ -174,6 +191,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/metallo.wav",
           waveform: "sine",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#8858c8",
           icon: "⚙️",
         },
@@ -185,6 +204,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/legno.wav",
           waveform: "triangle",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#e0574a",
           icon: "🪵",
         },
@@ -196,6 +217,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/cristallo.wav",
           waveform: "square",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#3c8dbc",
           icon: "🔮",
         },
@@ -207,6 +230,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/campana.wav",
           waveform: "sawtooth",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#2ca25f",
           icon: "🔔",
         },
@@ -220,6 +245,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/marimba.wav",
           waveform: "triangle",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#d9a441",
           icon: "🎶",
         },
@@ -231,6 +258,8 @@ window.PLUTO_PRESETS = {
           sample: "assets/samples/cristallo.wav",
           waveform: "square",
           volume: 1,
+          muted: false,
+          pan: 0,
           color: "#2dbba0",
           icon: "🔮",
         },

@@ -187,17 +187,24 @@
   }
 
   // ---------------------------------------------------------------------
-  // Mixer per canale: un GainNode per canale, tra la voce/il campione e il
+  // Mixer per canale: un GainNode (volume/muto/solo) seguito da uno
+  // StereoPannerNode (pan) per canale, tra la voce/il campione e il
   // masterGain — il bilanciamento tra i vari sensori, separato dal volume
-  // generale. Parte dal campo "volume" del canale nel preset (il mix di
-  // base scelto dal musicista), ma il pannello "Mixer canali" dell'app
-  // (vedi initMixerPanel) lo puo' ritoccare "al momento": quella modifica
-  // vale solo per la sessione corrente, si perde cambiando preset o
-  // ricaricando la pagina — per renderla permanente serve l'editor.
+  // generale. Parte dai campi "volume"/"muted"/"pan" del canale nel preset
+  // (il mix di base scelto dal musicista), ma il pannello "Mixer canali"
+  // dell'app (vedi buildMixerPanel) li puo' ritoccare "al momento": quella
+  // modifica vale solo per la sessione corrente, si perde cambiando preset
+  // o ricaricando la pagina — per renderla permanente serve l'editor.
+  // "Solo" invece non si salva mai nel preset: e' solo un aiuto per
+  // ascoltare un canale alla volta durante la sessione corrente.
   // ---------------------------------------------------------------------
 
   let channelGains = {}; // channel -> GainNode
-  let channelVolumeOverrides = {}; // channel -> 0..1, impostati dagli slider del mixer in questa sessione
+  let channelPanners = {}; // channel -> StereoPannerNode
+  let channelVolumeOverrides = {}; // channel -> 0..1, impostati dal mixer in questa sessione
+  let channelMuteOverrides = {}; // channel -> boolean, impostati dal mixer in questa sessione
+  let channelPanOverrides = {}; // channel -> -1..1, impostati dal mixer in questa sessione
+  let soloedChannels = new Set(); // canali isolati "al momento" (nessuno = tutti udibili)
 
   function resetChannelGains() {
     for (const gain of Object.values(channelGains)) {
@@ -207,20 +214,68 @@
         // gia' scollegato: va bene
       }
     }
+    for (const panner of Object.values(channelPanners)) {
+      try {
+        panner.disconnect();
+      } catch (err) {
+        // gia' scollegato: va bene
+      }
+    }
     channelGains = {};
-    channelVolumeOverrides = {}; // ogni preset riparte dal proprio mix di base, non da quello del preset precedente
+    channelPanners = {};
+    // ogni preset riparte dal proprio mix di base, non da quello del preset precedente
+    channelVolumeOverrides = {};
+    channelMuteOverrides = {};
+    channelPanOverrides = {};
+    soloedChannels = new Set();
+  }
+
+  function channelVolume(channel, cfg) {
+    const base = cfg && typeof cfg.volume === "number" ? cfg.volume : 1;
+    return channel in channelVolumeOverrides ? channelVolumeOverrides[channel] : base;
+  }
+
+  function channelMuted(channel, cfg) {
+    const base = !!(cfg && cfg.muted);
+    return channel in channelMuteOverrides ? channelMuteOverrides[channel] : base;
+  }
+
+  function channelPan(channel, cfg) {
+    const base = cfg && typeof cfg.pan === "number" ? cfg.pan : 0;
+    return channel in channelPanOverrides ? channelPanOverrides[channel] : base;
+  }
+
+  // Ricalcola e applica il guadagno effettivo di un canale, tenendo conto
+  // di volume, muto e dell'eventuale "solo" attivo su uno o piu' altri
+  // canali (se qualcuno e' in solo, tutti i non-solo restano a zero).
+  function updateChannelAudibility(channel) {
+    const gain = channelGains[channel];
+    if (!gain) return;
+    const cfg = MAPPING.channels[channel];
+    const muted = channelMuted(channel, cfg);
+    const audible = !muted && (soloedChannels.size === 0 || soloedChannels.has(channel));
+    gain.gain.value = audible ? channelVolume(channel, cfg) : 0;
+  }
+
+  function updateAllChannelsAudibility() {
+    for (const channel of Object.keys(MAPPING.channels)) updateChannelAudibility(channel);
   }
 
   function getChannelGain(channel) {
     const ctx = ensureAudioContext();
     if (!channelGains[channel]) {
       const cfg = MAPPING.channels[channel];
-      const base = cfg && typeof cfg.volume === "number" ? cfg.volume : 1;
-      const value = channel in channelVolumeOverrides ? channelVolumeOverrides[channel] : base;
       const gain = ctx.createGain();
-      gain.gain.value = value;
-      gain.connect(masterGain);
+      const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      if (panner) {
+        panner.pan.value = channelPan(channel, cfg);
+        gain.connect(panner).connect(masterGain);
+      } else {
+        gain.connect(masterGain); // browser senza StereoPannerNode: niente pan, resto invariato
+      }
       channelGains[channel] = gain;
+      if (panner) channelPanners[channel] = panner;
+      updateChannelAudibility(channel);
     }
     return channelGains[channel];
   }
@@ -811,27 +866,88 @@
   // modo permanente serve l'editor visuale (editor.html).
   // ---------------------------------------------------------------------
 
+  function panLabel(value) {
+    const pct = Math.round(Math.abs(value) * 100);
+    if (pct === 0) return "C";
+    return value < 0 ? `S${pct}` : `D${pct}`;
+  }
+
   function buildMixerPanel() {
     const container = document.getElementById("mixerSliders");
     if (!container) return;
     container.innerHTML = "";
     for (const [ch, cfg] of Object.entries(MAPPING.channels)) {
-      const base = typeof cfg.volume === "number" ? cfg.volume : 1;
+      const baseVolume = typeof cfg.volume === "number" ? cfg.volume : 1;
+      const basePan = typeof cfg.pan === "number" ? cfg.pan : 0;
+      const baseMuted = !!cfg.muted;
+
       const row = document.createElement("div");
       row.className = "mixer-row";
       row.innerHTML = `
-        <span class="mixer-row__label">${cfg.label}</span>
-        <input type="range" min="0" max="100" value="${Math.round(base * 100)}" aria-label="Volume ${cfg.label}" />
-        <span class="mixer-row__value">${Math.round(base * 100)}%</span>
+        <div class="mixer-row__head">
+          <span class="mixer-row__label">${cfg.label}</span>
+          <button type="button" class="mixer-mini-btn" data-role="mute" aria-pressed="${baseMuted}">Muto</button>
+          <button type="button" class="mixer-mini-btn" data-role="solo" aria-pressed="false">Solo</button>
+        </div>
+        <label class="mixer-slider-row">
+          <span class="mixer-slider-row__label">Volume</span>
+          <input type="range" min="0" max="100" value="${Math.round(baseVolume * 100)}" aria-label="Volume ${cfg.label}" />
+          <span class="mixer-slider-row__value" data-role="volumeValue">${Math.round(baseVolume * 100)}%</span>
+        </label>
+        <label class="mixer-slider-row">
+          <span class="mixer-slider-row__label">Pan</span>
+          <input type="range" min="-100" max="100" value="${Math.round(basePan * 100)}" aria-label="Pan ${cfg.label}" />
+          <span class="mixer-slider-row__value" data-role="panValue">${panLabel(basePan)}</span>
+        </label>
       `;
-      const slider = row.querySelector("input");
-      const valueEl = row.querySelector(".mixer-row__value");
-      slider.addEventListener("input", () => {
-        const value = Number(slider.value) / 100;
+
+      const muteBtn = row.querySelector('[data-role="mute"]');
+      const soloBtn = row.querySelector('[data-role="solo"]');
+      const volumeSlider = row.querySelector('input[aria-label^="Volume"]');
+      const panSlider = row.querySelector('input[aria-label^="Pan"]');
+      const volumeValue = row.querySelector('[data-role="volumeValue"]');
+      const panValue = row.querySelector('[data-role="panValue"]');
+
+      volumeSlider.addEventListener("input", () => {
+        const value = Number(volumeSlider.value) / 100;
         channelVolumeOverrides[ch] = value;
-        getChannelGain(ch).gain.value = value;
-        valueEl.textContent = `${slider.value}%`;
+        volumeValue.textContent = `${volumeSlider.value}%`;
+        getChannelGain(ch); // assicura che il nodo esista prima di ricalcolare
+        updateChannelAudibility(ch);
       });
+
+      panSlider.addEventListener("input", () => {
+        const value = Number(panSlider.value) / 100;
+        channelPanOverrides[ch] = value;
+        panValue.textContent = panLabel(value);
+        getChannelGain(ch);
+        if (channelPanners[ch]) channelPanners[ch].pan.value = value;
+      });
+
+      muteBtn.addEventListener("click", () => {
+        const next = !channelMuted(ch, cfg);
+        channelMuteOverrides[ch] = next;
+        muteBtn.setAttribute("aria-pressed", String(next));
+        muteBtn.classList.toggle("mixer-mini-btn--active", next);
+        getChannelGain(ch);
+        updateChannelAudibility(ch);
+      });
+
+      soloBtn.addEventListener("click", () => {
+        if (soloedChannels.has(ch)) soloedChannels.delete(ch);
+        else soloedChannels.add(ch);
+        // aggiorna lo stato visivo di TUTTI i pulsanti solo, non solo questo:
+        // con piu' canali in solo, ognuno deve restare evidenziato
+        container.querySelectorAll('[data-role="solo"]').forEach((btn) => {
+          const btnChannel = btn.closest(".mixer-row").dataset.channel;
+          const active = soloedChannels.has(btnChannel);
+          btn.setAttribute("aria-pressed", String(active));
+          btn.classList.toggle("mixer-mini-btn--active", active);
+        });
+        updateAllChannelsAudibility();
+      });
+
+      row.dataset.channel = ch;
       container.appendChild(row);
     }
   }
