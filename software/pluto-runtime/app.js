@@ -52,8 +52,10 @@
     const resolved = resolvePresetId(id);
     MAPPING = PRESETS.presets[resolved];
     buildChannelState();
+    resetChannelGains();
     stage.innerHTML = "";
     buildStage();
+    buildMixerPanel();
     try {
       localStorage.setItem(PRESET_STORAGE_KEY, resolved);
     } catch (err) {
@@ -184,6 +186,45 @@
     return audioCtx;
   }
 
+  // ---------------------------------------------------------------------
+  // Mixer per canale: un GainNode per canale, tra la voce/il campione e il
+  // masterGain — il bilanciamento tra i vari sensori, separato dal volume
+  // generale. Parte dal campo "volume" del canale nel preset (il mix di
+  // base scelto dal musicista), ma il pannello "Mixer canali" dell'app
+  // (vedi initMixerPanel) lo puo' ritoccare "al momento": quella modifica
+  // vale solo per la sessione corrente, si perde cambiando preset o
+  // ricaricando la pagina — per renderla permanente serve l'editor.
+  // ---------------------------------------------------------------------
+
+  let channelGains = {}; // channel -> GainNode
+  let channelVolumeOverrides = {}; // channel -> 0..1, impostati dagli slider del mixer in questa sessione
+
+  function resetChannelGains() {
+    for (const gain of Object.values(channelGains)) {
+      try {
+        gain.disconnect();
+      } catch (err) {
+        // gia' scollegato: va bene
+      }
+    }
+    channelGains = {};
+    channelVolumeOverrides = {}; // ogni preset riparte dal proprio mix di base, non da quello del preset precedente
+  }
+
+  function getChannelGain(channel) {
+    const ctx = ensureAudioContext();
+    if (!channelGains[channel]) {
+      const cfg = MAPPING.channels[channel];
+      const base = cfg && typeof cfg.volume === "number" ? cfg.volume : 1;
+      const value = channel in channelVolumeOverrides ? channelVolumeOverrides[channel] : base;
+      const gain = ctx.createGain();
+      gain.gain.value = value;
+      gain.connect(masterGain);
+      channelGains[channel] = gain;
+    }
+    return channelGains[channel];
+  }
+
   function midiToFrequency(note) {
     return 440 * Math.pow(2, (note - 69) / 12);
   }
@@ -202,7 +243,7 @@
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.25, now + 0.01);
 
-    osc.connect(gain).connect(masterGain);
+    osc.connect(gain).connect(getChannelGain(channel));
     osc.start();
 
     voices[channel] = { osc, gain };
@@ -245,7 +286,7 @@
   // I campioni sono "fire and forget": ogni trigger parte una nuova
   // riproduzione che si esaurisce da sola (come un vero strumento a
   // percussione/mallet), senza bisogno di una voce da fermare esplicitamente.
-  async function playSample(cfg, midiNote) {
+  async function playSample(channel, cfg, midiNote) {
     try {
       const buffer = await loadSample(cfg.sample);
       const ctx = ensureAudioContext();
@@ -254,7 +295,7 @@
       source.buffer = buffer;
       source.playbackRate.value = Math.pow(2, (midiNote - SAMPLE_BASE_NOTE) / 12);
       gain.gain.value = 0.9;
-      source.connect(gain).connect(masterGain);
+      source.connect(gain).connect(getChannelGain(channel));
       source.start();
     } catch (err) {
       console.error("Campione non caricato:", cfg.sample, err);
@@ -265,7 +306,7 @@
   // campione sia il sintetizzatore — decide quale dei due in base a
   // cfg.sample, cosi' il resto del codice non deve saperlo.
   function triggerNote(channel, cfg, midiNote) {
-    if (cfg.sample) playSample(cfg, midiNote);
+    if (cfg.sample) playSample(channel, cfg, midiNote);
     else startVoice(channel, midiNote, cfg.waveform);
     setTileActive(channel, midiNote, true);
   }
@@ -760,6 +801,73 @@
   }
 
   // ---------------------------------------------------------------------
+  // Mixer canali: uno slider per canale, per bilanciare i vari sensori "al
+  // momento" (es. durante una prova, per campionare meglio il brano) senza
+  // dover aprire l'editor del musicista. Nascosto di default (come la
+  // modalita' tecnica) dietro il pulsante "Mixer canali": e' pensato per
+  // chi sa cosa sta facendo, non per l'uso quotidiano con il paziente.
+  // Le regolazioni fatte qui valgono SOLO per questa sessione (si perdono
+  // cambiando preset o ricaricando la pagina) — per salvarle nel preset in
+  // modo permanente serve l'editor visuale (editor.html).
+  // ---------------------------------------------------------------------
+
+  function buildMixerPanel() {
+    const container = document.getElementById("mixerSliders");
+    if (!container) return;
+    container.innerHTML = "";
+    for (const [ch, cfg] of Object.entries(MAPPING.channels)) {
+      const base = typeof cfg.volume === "number" ? cfg.volume : 1;
+      const row = document.createElement("div");
+      row.className = "mixer-row";
+      row.innerHTML = `
+        <span class="mixer-row__label">${cfg.label}</span>
+        <input type="range" min="0" max="100" value="${Math.round(base * 100)}" aria-label="Volume ${cfg.label}" />
+        <span class="mixer-row__value">${Math.round(base * 100)}%</span>
+      `;
+      const slider = row.querySelector("input");
+      const valueEl = row.querySelector(".mixer-row__value");
+      slider.addEventListener("input", () => {
+        const value = Number(slider.value) / 100;
+        channelVolumeOverrides[ch] = value;
+        getChannelGain(ch).gain.value = value;
+        valueEl.textContent = `${slider.value}%`;
+      });
+      container.appendChild(row);
+    }
+  }
+
+  function initMixerToggle() {
+    const button = document.getElementById("mixerToggle");
+    const panel = document.getElementById("mixerPanel");
+    if (!button || !panel) return;
+
+    let enabled = false;
+    try {
+      enabled = localStorage.getItem("pluto-mixer-visibile") === "1";
+    } catch (err) {
+      // storage non disponibile: si parte da nascosto
+    }
+
+    function apply() {
+      panel.hidden = !enabled;
+      button.setAttribute("aria-pressed", String(enabled));
+      button.classList.toggle("status-button--active", enabled);
+    }
+
+    button.addEventListener("click", () => {
+      enabled = !enabled;
+      apply();
+      try {
+        localStorage.setItem("pluto-mixer-visibile", enabled ? "1" : "0");
+      } catch (err) {
+        // ignorato: la preferenza semplicemente non viene ricordata
+      }
+    });
+
+    apply();
+  }
+
+  // ---------------------------------------------------------------------
 
   let savedPresetId = null;
   try {
@@ -775,6 +883,7 @@
   initRadarSerial();
   initTechToggle();
   initFeedbackToggle();
+  initMixerToggle();
   initStopAll();
   initVolumeControl();
   initEditorGesture();

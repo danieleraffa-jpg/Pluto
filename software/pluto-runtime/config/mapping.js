@@ -50,6 +50,14 @@
 // MIDI, 60 = Do centrale). Per cambiare il colore del feedback visivo:
 // cambia "color" (formato esadecimale, es. "#e0574a").
 //
+// Campo "volume" (facoltativo, da 0 a 1, default 1): il bilanciamento di
+// questo canale rispetto agli altri — un mix di base pensato per chi
+// prepara il preset (es. un campione naturalmente piu' forte di un altro).
+// Il musicista lo regola qui o nell'editor visuale; chi usa l'app in
+// sessione puo' comunque ritoccarlo al momento dal pannello "Mixer canali"
+// (nascosto di default), ma SOLO per quella sessione: non tocca questo
+// file e si perde al ricaricamento della pagina.
+//
 // Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro,
 // utile a pazienti che non leggono per riconoscere i canali a colpo
 // d'occhio — a scelta libera, non serve che corrisponda letteralmente al
@@ -71,6 +79,7 @@ window.PLUTO_PRESETS = {
           scale: [60, 62, 64, 67, 69, 72, 74, 76, 79, 81],
           sample: "assets/samples/campana.wav",
           waveform: "sine", // usato solo se "sample" manca o non si carica
+          volume: 1,
           color: "#e0574a",
           icon: "🔔",
         },
@@ -81,6 +90,7 @@ window.PLUTO_PRESETS = {
           scale: [48, 51, 53, 55, 58, 60, 63, 65],
           sample: "assets/samples/marimba.wav",
           waveform: "triangle",
+          volume: 1,
           color: "#3c8dbc",
           icon: "🎶",
         },
@@ -91,6 +101,7 @@ window.PLUTO_PRESETS = {
           note: 60,
           sample: "assets/samples/legno.wav",
           waveform: "square",
+          volume: 1,
           color: "#2ca25f",
           icon: "🪵",
         },
@@ -101,6 +112,7 @@ window.PLUTO_PRESETS = {
           note: 67,
           sample: "assets/samples/metallo.wav",
           waveform: "sawtooth",
+          volume: 1,
           color: "#d9a441",
           icon: "⚙️",
         },
@@ -120,6 +132,7 @@ window.PLUTO_PRESETS = {
           scale: [55, 58, 60, 63, 65, 67, 70],
           sample: "assets/samples/cristallo.wav",
           waveform: "triangle",
+          volume: 1,
           color: "#8858c8",
           icon: "🔮",
         },
@@ -135,6 +148,7 @@ window.PLUTO_PRESETS = {
           note: 72,
           sample: "assets/samples/legno.wav",
           waveform: "square",
+          volume: 1,
           color: "#e0a830",
           icon: "🪵",
         },
@@ -159,6 +173,7 @@ window.PLUTO_PRESETS = {
           scale: [72, 74, 76, 79, 81, 84, 86, 88], // un'ottava sopra il Raggio 1 di "classico": subito piu' acuto
           sample: "assets/samples/metallo.wav",
           waveform: "sine",
+          volume: 1,
           color: "#8858c8",
           icon: "⚙️",
         },
@@ -169,6 +184,7 @@ window.PLUTO_PRESETS = {
           scale: [36, 39, 41, 43, 46, 48, 51, 53], // un'ottava sotto il Raggio 2 di "classico": subito piu' grave
           sample: "assets/samples/legno.wav",
           waveform: "triangle",
+          volume: 1,
           color: "#e0574a",
           icon: "🪵",
         },
@@ -179,6 +195,7 @@ window.PLUTO_PRESETS = {
           scale: [72, 76, 79, 84], // registro acuto, a differenza della Tavoletta 1 "classico" (nota fissa 60)
           sample: "assets/samples/cristallo.wav",
           waveform: "square",
+          volume: 1,
           color: "#3c8dbc",
           icon: "🔮",
         },
@@ -189,6 +206,7 @@ window.PLUTO_PRESETS = {
           note: 43, // registro grave, a differenza della Tavoletta 2 "classico" (nota 67)
           sample: "assets/samples/campana.wav",
           waveform: "sawtooth",
+          volume: 1,
           color: "#2ca25f",
           icon: "🔔",
         },
@@ -201,6 +219,7 @@ window.PLUTO_PRESETS = {
           scale: [72, 75, 77, 79, 82, 84], // registro acuto, a differenza del Radar "classico"
           sample: "assets/samples/marimba.wav",
           waveform: "triangle",
+          volume: 1,
           color: "#d9a441",
           icon: "🎶",
         },
@@ -211,6 +230,7 @@ window.PLUTO_PRESETS = {
           scale: [34, 41, 46, 53], // registro grave, a differenza dello Switch "classico" (nota fissa 72)
           sample: "assets/samples/cristallo.wav",
           waveform: "square",
+          volume: 1,
           color: "#2dbba0",
           icon: "🔮",
         },

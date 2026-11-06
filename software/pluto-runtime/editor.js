@@ -444,6 +444,33 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       row2.appendChild(iconField);
       channelForm.appendChild(row2);
 
+      // Volume (mix di base): l'educatore puo' ritoccarlo "al momento" dal
+      // pannello Mixer canali dell'app, ma solo per quella sessione — qui
+      // si salva in modo permanente nel preset.
+      if (typeof cfg.volume !== "number") cfg.volume = 1;
+      const volumeRow = document.createElement("div");
+      volumeRow.className = "note-add";
+      const volumeInput = document.createElement("input");
+      volumeInput.type = "range";
+      volumeInput.min = "0";
+      volumeInput.max = "100";
+      volumeInput.value = String(Math.round(cfg.volume * 100));
+      const volumeValue = document.createElement("span");
+      volumeValue.className = "note-chip";
+      volumeValue.textContent = `${volumeInput.value}%`;
+      volumeInput.addEventListener("input", () => {
+        cfg.volume = Number(volumeInput.value) / 100;
+        volumeValue.textContent = `${volumeInput.value}%`;
+        markDirty();
+      });
+      volumeRow.appendChild(volumeInput);
+      volumeRow.appendChild(volumeValue);
+      const volumeField = document.createElement("div");
+      volumeField.className = "field";
+      volumeField.innerHTML = "<label>Volume canale (mix di base)</label>";
+      volumeField.appendChild(volumeRow);
+      channelForm.appendChild(volumeField);
+
       // Prova
       const previewRow = document.createElement("div");
       previewRow.className = "preview-row";
@@ -597,6 +624,10 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
 // Campo "trigger": raggio -> "retrigger" (default) o "latching". tavoletta
 // -> "oneshot" (default), "sequence" (richiede "scale") o "latching".
 //
+// Campo "volume" (0-1, default 1): mix di base tra i canali — modificabile
+// anche "al momento" dal pannello Mixer canali dell'app, ma solo per quella
+// sessione; qui invece si salva in modo permanente nel preset.
+//
 // Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro.
 `;
 
@@ -620,6 +651,7 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       }
       if (cfg.sample) lines.push(`          sample: ${jsString(cfg.sample)},`);
       lines.push(`          waveform: ${jsString(cfg.waveform || "sine")},`);
+      lines.push(`          volume: ${typeof cfg.volume === "number" ? cfg.volume : 1},`);
       lines.push(`          color: ${jsString(cfg.color || "#7c4fd6")},`);
       if (cfg.icon) lines.push(`          icon: ${jsString(cfg.icon)},`);
       return lines.join("\n");

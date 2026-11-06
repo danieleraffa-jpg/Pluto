@@ -136,6 +136,12 @@ header a.status-button {
   color: var(--text);
 }
 
+.field input[type="range"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  width: 220px;
+}
+
 .field input[type="color"] {
   width: 64px;
   height: 40px;

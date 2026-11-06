@@ -33,6 +33,7 @@
       <div id="midiStatus" class="status">MIDI: inizializzazione…</div>
       <button id="feedbackToggle" class="status-button status-button--ghost" aria-pressed="false">Feedback sobrio</button>
       <button id="techToggle" class="status-button status-button--ghost" aria-pressed="false">Modalità tecnica</button>
+      <button id="mixerToggle" class="status-button status-button--ghost" aria-pressed="false">Mixer canali</button>
       <button id="stopAll" class="status-button status-button--warn">Silenzia tutto</button>
     </div>
   </header>
@@ -41,6 +42,18 @@
     <!-- Un riquadro per ogni canale configurato: si illumina quando l'oggetto fisico viene attivato.
          Pensato come primo feedback visivo per il paziente/l'educatore; i colori vengono da config/mapping.js -->
   </main>
+
+  <div id="mixerPanel" class="mixer-panel" hidden>
+    <section>
+      <h2>Mixer canali</h2>
+      <p class="hint">
+        Un volume per ogni sensore, per bilanciare il mix "al momento" (es. mentre si prova un brano).
+        Valido solo per questa sessione: si perde cambiando preset o ricaricando la pagina — per salvarlo
+        in modo permanente usa l'editor del musicista.
+      </p>
+      <div id="mixerSliders" class="mixer-sliders"></div>
+    </section>
+  </div>
 
   <div id="debugPanel" class="debug-panel" hidden>
     <section id="midiMonitor">
