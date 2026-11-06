@@ -187,19 +187,24 @@
   }
 
   // ---------------------------------------------------------------------
-  // Mixer per canale: un GainNode (volume/muto/solo) seguito da uno
-  // StereoPannerNode (pan) per canale, tra la voce/il campione e il
-  // masterGain — il bilanciamento tra i vari sensori, separato dal volume
-  // generale. Parte dai campi "volume"/"muted"/"pan" del canale nel preset
-  // (il mix di base scelto dal musicista), ma il pannello "Mixer canali"
-  // dell'app (vedi buildMixerPanel) li puo' ritoccare "al momento": quella
-  // modifica vale solo per la sessione corrente, si perde cambiando preset
-  // o ricaricando la pagina — per renderla permanente serve l'editor.
-  // "Solo" invece non si salva mai nel preset: e' solo un aiuto per
-  // ascoltare un canale alla volta durante la sessione corrente.
+  // Mixer per canale: un GainNode (volume/muto/solo), un equalizzatore a 3
+  // bande (bassi/medi/alti) e uno StereoPannerNode (pan), in questo
+  // ordine, tra la voce/il campione e il masterGain — il bilanciamento tra
+  // i vari sensori, separato dal volume generale. Parte dai campi
+  // "volume"/"muted"/"pan"/"eqLow"/"eqMid"/"eqHigh" del canale nel preset
+  // (il mix di base scelto dal musicista). Volume/muto/pan, in piu', si
+  // possono ritoccare "al momento" dal pannello "Mixer canali" dell'app
+  // (vedi buildMixerPanel): quella modifica vale solo per la sessione
+  // corrente, si perde cambiando preset o ricaricando la pagina — per
+  // renderla permanente serve l'editor. "Solo" invece non si salva mai nel
+  // preset: e' solo un aiuto per ascoltare un canale alla volta durante la
+  // sessione corrente. L'equalizzatore, diversamente, e' solo una scelta
+  // di preparazione del suono: si regola unicamente nell'editor, senza un
+  // ritocco "al momento" equivalente.
   // ---------------------------------------------------------------------
 
   let channelGains = {}; // channel -> GainNode
+  let channelEQs = {}; // channel -> { low, mid, high } BiquadFilterNode
   let channelPanners = {}; // channel -> StereoPannerNode
   let channelVolumeOverrides = {}; // channel -> 0..1, impostati dal mixer in questa sessione
   let channelMuteOverrides = {}; // channel -> boolean, impostati dal mixer in questa sessione
@@ -214,6 +219,15 @@
         // gia' scollegato: va bene
       }
     }
+    for (const eq of Object.values(channelEQs)) {
+      try {
+        eq.low.disconnect();
+        eq.mid.disconnect();
+        eq.high.disconnect();
+      } catch (err) {
+        // gia' scollegato: va bene
+      }
+    }
     for (const panner of Object.values(channelPanners)) {
       try {
         panner.disconnect();
@@ -222,6 +236,7 @@
       }
     }
     channelGains = {};
+    channelEQs = {};
     channelPanners = {};
     // ogni preset riparte dal proprio mix di base, non da quello del preset precedente
     channelVolumeOverrides = {};
@@ -245,6 +260,11 @@
     return channel in channelPanOverrides ? channelPanOverrides[channel] : base;
   }
 
+  // EQ: niente override di sessione (vedi commento sopra) — legge solo dal preset.
+  function channelEqGain(cfg, field) {
+    return cfg && typeof cfg[field] === "number" ? cfg[field] : 0;
+  }
+
   // Ricalcola e applica il guadagno effettivo di un canale, tenendo conto
   // di volume, muto e dell'eventuale "solo" attivo su uno o piu' altri
   // canali (se qualcuno e' in solo, tutti i non-solo restano a zero).
@@ -266,12 +286,31 @@
     if (!channelGains[channel]) {
       const cfg = MAPPING.channels[channel];
       const gain = ctx.createGain();
+
+      // Equalizzatore a 3 bande (bassi/medi/alti), tra il volume e il pan —
+      // vedi il commento sopra "Mixer per canale" per cosa regola ciascuno.
+      const low = ctx.createBiquadFilter();
+      low.type = "lowshelf";
+      low.frequency.value = 300;
+      low.gain.value = channelEqGain(cfg, "eqLow");
+      const mid = ctx.createBiquadFilter();
+      mid.type = "peaking";
+      mid.frequency.value = 1000;
+      mid.Q.value = 1;
+      mid.gain.value = channelEqGain(cfg, "eqMid");
+      const high = ctx.createBiquadFilter();
+      high.type = "highshelf";
+      high.frequency.value = 3000;
+      high.gain.value = channelEqGain(cfg, "eqHigh");
+      gain.connect(low).connect(mid).connect(high);
+      channelEQs[channel] = { low, mid, high };
+
       const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
       if (panner) {
         panner.pan.value = channelPan(channel, cfg);
-        gain.connect(panner).connect(masterGain);
+        high.connect(panner).connect(masterGain);
       } else {
-        gain.connect(masterGain); // browser senza StereoPannerNode: niente pan, resto invariato
+        high.connect(masterGain); // browser senza StereoPannerNode: niente pan, resto invariato
       }
       channelGains[channel] = gain;
       if (panner) channelPanners[channel] = panner;

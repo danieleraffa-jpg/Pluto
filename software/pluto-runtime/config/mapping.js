@@ -56,12 +56,16 @@
 // Campo "muted" (facoltativo, default false): il canale parte silenziato
 // di default (restano i colori/il feedback visivo, ma niente suono). Campo
 // "pan" (facoltativo, da -1 a 1, default 0): posizione tra le due casse,
-// ha senso solo con un impianto audio davvero stereo. Tutti e tre si
-// regolano qui o nell'editor visuale; chi usa l'app in sessione puo'
-// comunque ritoccarli al momento dal pannello "Mixer canali" (nascosto di
-// default, con in piu' un "Solo" per isolare un canale), ma SOLO per
-// quella sessione: non toccano questo file e si perdono al ricaricamento
-// della pagina.
+// ha senso solo con un impianto audio davvero stereo. Campi "eqLow",
+// "eqMid", "eqHigh" (facoltativi, in dB da -12 a 12, default 0): un
+// equalizzatore a 3 bande (bassi/medi/alti) per smussare o caratterizzare
+// un campione senza doverlo rifare. Tutti si regolano qui o nell'editor
+// visuale; chi usa l'app in sessione puo' comunque ritoccare volume/muto/
+// pan al momento dal pannello "Mixer canali" (nascosto di default, con in
+// piu' un "Solo" per isolare un canale), ma SOLO per quella sessione: non
+// toccano questo file e si perdono al ricaricamento della pagina. L'EQ
+// invece si regola solo qui: e' una scelta di preparazione del suono, non
+// un ritocco "al momento".
 //
 // Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro,
 // utile a pazienti che non leggono per riconoscere i canali a colpo
@@ -87,6 +91,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#e0574a",
           icon: "🔔",
         },
@@ -100,6 +107,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#3c8dbc",
           icon: "🎶",
         },
@@ -113,6 +123,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#2ca25f",
           icon: "🪵",
         },
@@ -126,6 +139,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#d9a441",
           icon: "⚙️",
         },
@@ -148,6 +164,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#8858c8",
           icon: "🔮",
         },
@@ -166,6 +185,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#e0a830",
           icon: "🪵",
         },
@@ -193,6 +215,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#8858c8",
           icon: "⚙️",
         },
@@ -206,6 +231,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#e0574a",
           icon: "🪵",
         },
@@ -219,6 +247,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#3c8dbc",
           icon: "🔮",
         },
@@ -232,6 +263,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#2ca25f",
           icon: "🔔",
         },
@@ -247,6 +281,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#d9a441",
           icon: "🎶",
         },
@@ -260,6 +297,9 @@ window.PLUTO_PRESETS = {
           volume: 1,
           muted: false,
           pan: 0,
+          eqLow: 0,
+          eqMid: 0,
+          eqHigh: 0,
           color: "#2dbba0",
           icon: "🔮",
         },

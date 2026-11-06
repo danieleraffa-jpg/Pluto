@@ -497,6 +497,9 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       if (typeof cfg.volume !== "number") cfg.volume = 1;
       if (typeof cfg.muted !== "boolean") cfg.muted = false;
       if (typeof cfg.pan !== "number") cfg.pan = 0;
+      if (typeof cfg.eqLow !== "number") cfg.eqLow = 0;
+      if (typeof cfg.eqMid !== "number") cfg.eqMid = 0;
+      if (typeof cfg.eqHigh !== "number") cfg.eqHigh = 0;
 
       const volumeRow = document.createElement("div");
       volumeRow.className = "note-add";
@@ -565,6 +568,39 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       panField.innerHTML = "<label>Pan (bilanciamento sinistra/destra)</label>";
       panField.appendChild(panRow);
       channelForm.appendChild(panField);
+
+      // Equalizzatore (bassi/medi/alti): smussa o caratterizza il suono di
+      // questo canale, in dB. Solo qui — niente ritocco "al momento"
+      // equivalente nel mixer dell'app, e' una scelta di preparazione.
+      const eqBands = [
+        ["eqLow", "Bassi (EQ)"],
+        ["eqMid", "Medi (EQ)"],
+        ["eqHigh", "Alti (EQ)"],
+      ];
+      for (const [field, labelText] of eqBands) {
+        const eqRow = document.createElement("div");
+        eqRow.className = "note-add";
+        const eqInput = document.createElement("input");
+        eqInput.type = "range";
+        eqInput.min = "-12";
+        eqInput.max = "12";
+        eqInput.value = String(cfg[field]);
+        const eqValue = document.createElement("span");
+        eqValue.className = "note-chip";
+        eqValue.textContent = `${cfg[field] > 0 ? "+" : ""}${cfg[field]} dB`;
+        eqInput.addEventListener("input", () => {
+          cfg[field] = Number(eqInput.value);
+          eqValue.textContent = `${cfg[field] > 0 ? "+" : ""}${cfg[field]} dB`;
+          markDirty();
+        });
+        eqRow.appendChild(eqInput);
+        eqRow.appendChild(eqValue);
+        const eqField = document.createElement("div");
+        eqField.className = "field";
+        eqField.innerHTML = `<label>${labelText}</label>`;
+        eqField.appendChild(eqRow);
+        channelForm.appendChild(eqField);
+      }
 
       // Prova
       const previewRow = document.createElement("div");
@@ -723,7 +759,9 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
 // default 0): mix di base tra i canali — modificabili anche "al momento"
 // dal pannello Mixer canali dell'app (che aggiunge anche un "Solo" per
 // isolare un canale, mai salvato qui), ma solo per quella sessione; qui
-// invece si salvano in modo permanente nel preset.
+// invece si salvano in modo permanente nel preset. Campi "eqLow"/"eqMid"/
+// "eqHigh" (dB da -12 a 12, default 0): equalizzatore a 3 bande, solo qui
+// — nessun ritocco "al momento" equivalente nel mixer dell'app.
 //
 // Campo "icon" (facoltativo): un'emoji mostrata in grande sul riquadro.
 `;
@@ -751,6 +789,9 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       lines.push(`          volume: ${typeof cfg.volume === "number" ? cfg.volume : 1},`);
       lines.push(`          muted: ${cfg.muted ? "true" : "false"},`);
       lines.push(`          pan: ${typeof cfg.pan === "number" ? cfg.pan : 0},`);
+      lines.push(`          eqLow: ${typeof cfg.eqLow === "number" ? cfg.eqLow : 0},`);
+      lines.push(`          eqMid: ${typeof cfg.eqMid === "number" ? cfg.eqMid : 0},`);
+      lines.push(`          eqHigh: ${typeof cfg.eqHigh === "number" ? cfg.eqHigh : 0},`);
       lines.push(`          color: ${jsString(cfg.color || "#7c4fd6")},`);
       if (cfg.icon) lines.push(`          icon: ${jsString(cfg.icon)},`);
       return lines.join("\n");
