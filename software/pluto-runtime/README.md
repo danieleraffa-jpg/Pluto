@@ -35,7 +35,15 @@ Decisione del progetto (18/10/2026): niente raggi/tavolette wireless (latenza + 
 
 ## Cosa modificare per cambiare suoni/numero di oggetti
 
-Tutto in [`config/mapping.js`](config/mapping.js) — commentato, pensato per essere modificato anche da chi non programma: quali canali MIDI corrispondono a quali raggi/tavolette, che note sono disponibili, che colore ha il feedback visivo.
+Tutto in [`config/mapping.js`](config/mapping.js) — commentato, pensato per essere modificato anche da chi non programma: quali canali MIDI corrispondono a quali raggi/tavolette, che note sono disponibili, che colore ha il feedback visivo. **Meglio però usare l'editor visuale** (vedi sotto): stesso file, ma senza scrivere codice a mano.
+
+## Editor preset per il musicista
+
+Pagina separata, **non raggiungibile dall'app che usa l'educatore** (nessun link da `index.html`): [`editor.html`](editor.html), cioè `http://127.0.0.1:5173/editor.html` sul tablet (o l'indirizzo locale durante lo sviluppo). Protetta da un PIN semplice (costante `PIN_HASH` in [`editor.js`](editor.js), con le istruzioni per cambiarlo) — è un deterrente contro l'apertura per sbaglio, **non una vera sicurezza**: tutto il sito è statico, senza backend, quindi chi legge il codice sorgente può comunque aggirarlo.
+
+Permette di creare/duplicare/rinominare/eliminare preset e modificare ogni canale (etichetta, modalità di trigger, note/scala, campione audio, forma d'onda, colore, icona) con un modulo visuale e un pulsante "▶ Prova" per sentire subito il risultato — senza aprire `mapping.js`. Il salvataggio scrive direttamente su `config/mapping.js` (via File System Access API, Chrome/Edge desktop) oppure propone di scaricare il file aggiornato da spostare a mano dove serve. Per aggiungere un suono nuovo va comunque copiato a mano il file `.wav` in `assets/samples/` — l'editor lo seleziona per nome, non carica ancora file audio direttamente.
+
+**Attenzione**: salvando da li', i commenti scritti a mano su singoli valori nel file (non quelli generali in cima, quelli restano) vengono rigenerati e si perdono.
 
 ## Cosa manca (prossimi passi)
 
