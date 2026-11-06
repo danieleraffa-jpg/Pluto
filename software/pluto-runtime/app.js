@@ -671,6 +671,34 @@
   }
 
   // ---------------------------------------------------------------------
+  // Gesto nascosto per raggiungere l'editor dei preset (editor.html) senza
+  // dover conoscere/scrivere l'indirizzo a mano: 5 tocchi rapidi sul logo
+  // "Pluto" nell'header. Nessun pulsante visibile apposta — l'editor non e'
+  // pensato per l'educatore (vedi editor.js), solo per chi prepara i suoni
+  // e sa che il gesto esiste. Stesso principio del gesto nascosto gia' in
+  // uso nell'app Android (vedi android-kiosk/.../MainActivity.kt).
+  // ---------------------------------------------------------------------
+
+  function initEditorGesture() {
+    const titleEl = document.querySelector("header h1");
+    if (!titleEl) return;
+
+    let count = 0;
+    let lastTap = 0;
+
+    titleEl.addEventListener("click", () => {
+      const now = Date.now();
+      if (now - lastTap > 1500) count = 0;
+      lastTap = now;
+      count += 1;
+      if (count >= 5) {
+        count = 0;
+        window.location.href = "editor.html";
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // "Silenzia tutto": spegne subito ogni suono attivo e riporta tutti i
   // riquadri a riposo. Pensato come sicurezza in sessione (es. una
   // tavoletta "latching" rimasta accesa per sbaglio), non serve passare
@@ -749,4 +777,5 @@
   initFeedbackToggle();
   initStopAll();
   initVolumeControl();
+  initEditorGesture();
 })();

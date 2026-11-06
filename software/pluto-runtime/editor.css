@@ -55,6 +55,12 @@
   min-height: 1.2em;
 }
 
+header a.status-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .editor-layout {
   display: flex;
   gap: 20px;
