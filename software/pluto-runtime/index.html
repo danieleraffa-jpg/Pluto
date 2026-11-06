@@ -35,8 +35,22 @@
       <button id="techToggle" class="status-button status-button--ghost" aria-pressed="false">Modalità tecnica</button>
       <button id="mixerToggle" class="status-button status-button--ghost" aria-pressed="false">Mixer canali</button>
       <button id="stopAll" class="status-button status-button--warn">Silenzia tutto</button>
+      <button id="closeButton" class="status-button status-button--ghost" hidden>Chiudi app</button>
     </div>
   </header>
+
+  <!-- Visibile solo dentro l'app Android (vedi initCloseButton in app.js):
+       in un browser normale non c'e' nulla da "chiudere" in questo senso,
+       quindi il pulsante resta nascosto. -->
+  <div id="closeConfirm" class="close-confirm" hidden>
+    <div class="close-confirm__box">
+      <p>Chiudere l'app?</p>
+      <div class="close-confirm__actions">
+        <button id="closeConfirmYes" class="status-button status-button--warn">Sì, chiudi</button>
+        <button id="closeConfirmNo" class="status-button status-button--ghost">Annulla</button>
+      </div>
+    </div>
+  </div>
 
   <main id="stage">
     <!-- Un riquadro per ogni canale configurato: si illumina quando l'oggetto fisico viene attivato.

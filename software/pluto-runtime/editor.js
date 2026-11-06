@@ -833,11 +833,42 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       if (dirty) e.preventDefault();
     });
 
+    // --- Chiudi app: visibile solo dentro il wrapper Android -------------
+    // (window.PlutoApp, vedi app.js per gli stessi dettagli). Qui in piu'
+    // il messaggio di conferma avvisa se ci sono modifiche non salvate.
+
+    function initCloseButton() {
+      const button = document.getElementById("closeButton");
+      const overlay = document.getElementById("closeConfirm");
+      const text = document.getElementById("closeConfirmText");
+      const yesButton = document.getElementById("closeConfirmYes");
+      const noButton = document.getElementById("closeConfirmNo");
+      if (!button || !overlay || !text || !yesButton || !noButton) return;
+
+      const bridge = window.PlutoApp;
+      if (!bridge || typeof bridge.chiudi !== "function") return; // niente da chiudere qui
+
+      button.hidden = false;
+      button.addEventListener("click", () => {
+        text.textContent = dirty
+          ? "Ci sono modifiche non salvate. Chiudere comunque?"
+          : "Chiudere l'app?";
+        overlay.hidden = false;
+      });
+      noButton.addEventListener("click", () => {
+        overlay.hidden = true;
+      });
+      yesButton.addEventListener("click", () => {
+        bridge.chiudi();
+      });
+    }
+
     // --- Avvio -------------------------------------------------------------
 
     renderPresetSelect();
     renderChannelTabs();
     renderChannelForm();
+    initCloseButton();
   }
 
   initLock();

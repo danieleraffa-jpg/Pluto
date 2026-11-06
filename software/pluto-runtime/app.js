@@ -984,6 +984,38 @@
   }
 
   // ---------------------------------------------------------------------
+  // Chiudi app: visibile solo dentro il wrapper Android (window.PlutoApp,
+  // iniettato da MainActivity.kt), dove serve un modo comodo per uscire
+  // dalla kiosk mode senza passare dal gesto nascosto nell'angolo. In un
+  // browser normale (es. durante lo sviluppo) non c'e' nulla da chiudere
+  // in questo senso, quindi il pulsante resta nascosto. Conferma con un
+  // overlay nostro, non window.confirm(): la WebView dell'app non ha un
+  // WebChromeClient configurato e potrebbe non mostrare i dialog nativi.
+  // ---------------------------------------------------------------------
+
+  function initCloseButton() {
+    const button = document.getElementById("closeButton");
+    const overlay = document.getElementById("closeConfirm");
+    const yesButton = document.getElementById("closeConfirmYes");
+    const noButton = document.getElementById("closeConfirmNo");
+    if (!button || !overlay || !yesButton || !noButton) return;
+
+    const bridge = window.PlutoApp;
+    if (!bridge || typeof bridge.chiudi !== "function") return; // niente da chiudere qui
+
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      overlay.hidden = false;
+    });
+    noButton.addEventListener("click", () => {
+      overlay.hidden = true;
+    });
+    yesButton.addEventListener("click", () => {
+      bridge.chiudi();
+    });
+  }
+
+  // ---------------------------------------------------------------------
 
   let savedPresetId = null;
   try {
@@ -1003,4 +1035,5 @@
   initStopAll();
   initVolumeControl();
   initEditorGesture();
+  initCloseButton();
 })();

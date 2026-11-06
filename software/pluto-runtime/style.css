@@ -423,6 +423,44 @@ footer {
   font-size: 0.85rem;
 }
 
+/* Conferma per il pulsante "Chiudi" (app.js/editor.js): non usiamo
+   window.confirm() nativo perche' la WebView dell'app Android non ha un
+   WebChromeClient configurato e potrebbe non mostrarlo. */
+.close-confirm {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 36, 64, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.close-confirm[hidden] { display: none !important; }
+
+.close-confirm__box {
+  background: var(--panel);
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(43, 36, 64, 0.2);
+}
+
+.close-confirm__box p {
+  margin: 0 0 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.close-confirm__actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
 footer p { margin: 4px 0; }
 kbd {
   background: var(--panel-soft);
