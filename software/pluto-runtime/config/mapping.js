@@ -143,9 +143,12 @@ window.PLUTO_PRESETS = {
 
     // Preset d'esempio per mostrare le nuove modalita' di trigger: una
     // tavoletta "a sequenza" e un raggio "latching" (vedi spiegazione sopra).
-    // Scale e colori diversi dal preset "classico" solo per rendere
-    // riconoscibile il cambio: il musicista sostituira' questi valori con
-    // un repertorio vero.
+    // Siccome riusa inevitabilmente gli stessi 5 file .wav placeholder del
+    // preset "classico" (il repertorio vero arrivera' dal musicista), per
+    // farlo suonare davvero diverso GIA' AL PRIMO TOCCO ogni canale usa qui
+    // un campione DIVERSO dal suo corrispondente in "classico" (mai lo
+    // stesso file sullo stesso canale) e un registro (acuto/grave)
+    // nettamente scostato, non solo note/colori diversi.
     giocoso: {
       label: "Giocoso",
       channels: {
@@ -153,41 +156,41 @@ window.PLUTO_PRESETS = {
           label: "Raggio 1",
           type: "raggio",
           trigger: "latching", // resta acceso finche' non cambia division, anche se si lascia la presa
-          scale: [57, 60, 62, 64, 67, 69, 72, 74],
-          sample: "assets/samples/cristallo.wav",
+          scale: [72, 74, 76, 79, 81, 84, 86, 88], // un'ottava sopra il Raggio 1 di "classico": subito piu' acuto
+          sample: "assets/samples/metallo.wav",
           waveform: "sine",
           color: "#8858c8",
-          icon: "🔮",
+          icon: "⚙️",
         },
         2: {
           label: "Raggio 2",
           type: "raggio",
           trigger: "retrigger",
-          scale: [50, 53, 55, 57, 60, 62, 65],
-          sample: "assets/samples/marimba.wav",
+          scale: [36, 39, 41, 43, 46, 48, 51, 53], // un'ottava sotto il Raggio 2 di "classico": subito piu' grave
+          sample: "assets/samples/legno.wav",
           waveform: "triangle",
-          color: "#3c8dbc",
-          icon: "🎶",
+          color: "#e0574a",
+          icon: "🪵",
         },
         3: {
           label: "Tavoletta 1",
           type: "tavoletta",
           trigger: "sequence", // ogni pressione avanza nella scala
-          scale: [60, 64, 67, 72],
-          sample: "assets/samples/campana.wav",
+          scale: [72, 76, 79, 84], // registro acuto, a differenza della Tavoletta 1 "classico" (nota fissa 60)
+          sample: "assets/samples/cristallo.wav",
           waveform: "square",
-          color: "#e0574a",
-          icon: "🔔",
+          color: "#3c8dbc",
+          icon: "🔮",
         },
         4: {
           label: "Tavoletta 2",
           type: "tavoletta",
           trigger: "latching", // accende/spegne un suono di sottofondo
-          note: 55,
-          sample: "assets/samples/metallo.wav",
+          note: 43, // registro grave, a differenza della Tavoletta 2 "classico" (nota 67)
+          sample: "assets/samples/campana.wav",
           waveform: "sawtooth",
-          color: "#d9a441",
-          icon: "⚙️",
+          color: "#2ca25f",
+          icon: "🔔",
         },
         radar: {
           label: "Radar distanza",
@@ -195,21 +198,21 @@ window.PLUTO_PRESETS = {
           trigger: "retrigger",
           minCm: 5,
           maxCm: 80,
-          scale: [60, 63, 65, 67, 70, 72],
-          sample: "assets/samples/cristallo.wav",
+          scale: [72, 75, 77, 79, 82, 84], // registro acuto, a differenza del Radar "classico"
+          sample: "assets/samples/marimba.wav",
           waveform: "triangle",
-          color: "#2ca25f",
-          icon: "🌙",
+          color: "#d9a441",
+          icon: "🎶",
         },
         switchSeriale: {
           label: "Switch Arduino",
           type: "tavoletta",
           trigger: "sequence",
-          scale: [48, 55, 60, 67],
-          sample: "assets/samples/legno.wav",
+          scale: [34, 41, 46, 53], // registro grave, a differenza dello Switch "classico" (nota fissa 72)
+          sample: "assets/samples/cristallo.wav",
           waveform: "square",
-          color: "#e0a830",
-          icon: "🪵",
+          color: "#2dbba0",
+          icon: "🔮",
         },
       },
     },
