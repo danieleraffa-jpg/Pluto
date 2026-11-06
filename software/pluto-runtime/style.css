@@ -53,13 +53,39 @@ h1 {
   color: #221c38;
 }
 
-.title-mark { font-size: 1.3em; line-height: 1; }
+.title-mark { width: 1.4em; height: 1.4em; flex-shrink: 0; }
 
 .status-group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+}
+
+.preset-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 16px 6px 18px;
+  box-shadow: 0 2px 6px rgba(43, 36, 64, 0.06);
+}
+
+.preset-picker select {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  padding: 4px 2px;
+  min-height: 32px;
+  cursor: pointer;
 }
 
 .status {
@@ -108,11 +134,12 @@ h1 {
 
 main#stage {
   flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
   gap: 20px;
   padding: 12px 28px 32px;
-  align-content: start;
 }
 
 .channel-tile {
@@ -120,11 +147,15 @@ main#stage {
   border-radius: 24px;
   padding: 24px;
   min-height: 180px;
+  flex: 1 1 260px;
+  max-width: 340px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   border: 3px solid var(--border);
   box-shadow: 0 6px 18px rgba(43, 36, 64, 0.08);
+  position: relative;
+  overflow: hidden;
   transition: border-color 80ms linear, box-shadow 80ms linear, transform 150ms ease, background-color 80ms linear;
 }
 
@@ -135,12 +166,21 @@ main#stage {
 }
 
 .channel-tile .type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-top: 2px;
+  margin-top: 6px;
+}
+
+.type-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
 }
 
 .channel-tile .note {
@@ -167,6 +207,39 @@ main#stage {
 .channel-tile.active .note {
   color: #fff;
   opacity: 1;
+}
+
+/* Modalita' "Feedback vivace" (opt-in, vedi initFeedbackToggle in app.js):
+   in piu' al riempimento colore (sempre attivo e istantaneo, non dipende
+   da questa modalita'), un anello si espande e sfuma dal centro del
+   riquadro a ogni trigger. Spento di default: alcuni pazienti hanno
+   sensibilita' sensoriale diversa, il movimento extra va attivato apposta. */
+.channel-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.feedback-vivace .channel-tile.pulse::after {
+  animation: pulse-ring 500ms ease-out;
+}
+
+@keyframes pulse-ring {
+  from {
+    opacity: 0.55;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
 }
 
 .debug-panel {

@@ -8,8 +8,9 @@
 //     "posizione -> nota da una sequenza" del Soundbeam originale (vedi
 //     docs/soundbeam-tecnico.md). Se arriva gia' una nota diretta (es. dal
 //     test da tastiera), la usa cosi' com'e'.
-//  3. Per i canali "tavoletta" suona sempre la stessa nota, una volta per
-//     pressione (comportamento on/off).
+//  3. Per i canali "tavoletta" suona una nota (fissa, o avanzando in una
+//     scala, o accendendo/spegnendo un suono sostenuto), in base al campo
+//     "trigger" del canale — vedi config/mapping.js.
 //  4. Suona con un sintetizzatore semplice via Web Audio (nessun file
 //     audio necessario per ora: i suoni veri li sceglierà il musicista in
 //     seguito, qui servono solo a verificare che il sistema risponda).
@@ -18,21 +19,81 @@
 (function () {
   "use strict";
 
-  const MAPPING = window.PLUTO_MAPPING;
+  const PRESETS = window.PLUTO_PRESETS;
   const stage = document.getElementById("stage");
   const statusEl = document.getElementById("midiStatus");
 
-  // --- stato per canale: traccia l'ultima "division" scelta per i raggi,
-  // cosi' possiamo ritriggerare una nota solo quando cambia (comportamento
-  // Re-Trigger del manuale Soundbeam), non ad ogni singolo CC ricevuto.
-  const channelState = {};
-  for (const ch of Object.keys(MAPPING.channels)) {
-    channelState[ch] = { lastDivision: null, activeNote: null };
+  // --- stato per canale: traccia l'ultima "division" scelta per i raggi
+  // (o la posizione nella sequenza per le tavolette "sequence", o lo stato
+  // acceso/spento per "latching"), cosi' possiamo ritriggerare una nota
+  // solo quando serve, non ad ogni singolo evento ricevuto.
+  let MAPPING = null; // preset attivo: { label, channels }
+  let channelState = {};
+
+  function buildChannelState() {
+    channelState = {};
+    for (const ch of Object.keys(MAPPING.channels)) {
+      channelState[ch] = { lastDivision: null, activeNote: null, sequenceIndex: 0, latchedOn: false };
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Preset: quale set di suoni e' attivo, scelto dall'educatore
+  // ---------------------------------------------------------------------
+
+  const PRESET_STORAGE_KEY = "pluto-preset";
+
+  function resolvePresetId(requestedId) {
+    if (requestedId && PRESETS.presets[requestedId]) return requestedId;
+    return PRESETS.defaultPreset;
+  }
+
+  function setPreset(id) {
+    const resolved = resolvePresetId(id);
+    MAPPING = PRESETS.presets[resolved];
+    buildChannelState();
+    stage.innerHTML = "";
+    buildStage();
+    try {
+      localStorage.setItem(PRESET_STORAGE_KEY, resolved);
+    } catch (err) {
+      // storage non disponibile: la scelta vale solo per questa sessione
+    }
+    updatePresetSelector(resolved);
+    return resolved;
+  }
+
+  function initPresetSelector() {
+    const select = document.getElementById("presetSelect");
+    if (!select) return;
+
+    select.innerHTML = "";
+    for (const [id, preset] of Object.entries(PRESETS.presets)) {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = preset.label;
+      select.appendChild(option);
+    }
+
+    select.addEventListener("change", () => setPreset(select.value));
+  }
+
+  function updatePresetSelector(activeId) {
+    const select = document.getElementById("presetSelect");
+    if (select) select.value = activeId;
   }
 
   // ---------------------------------------------------------------------
   // Interfaccia: un riquadro per canale
   // ---------------------------------------------------------------------
+
+  const TYPE_ICONS = {
+    // "onda" per i raggi (controllo continuo), "tocco" per le tavolette (on/off)
+    raggio:
+      '<svg viewBox="0 0 24 24" class="type-icon" aria-hidden="true"><path d="M2 12c2 0 2-7 4-7s2 7 4 7 2-7 4-7 2 7 4 7 2-7 4-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    tavoletta:
+      '<svg viewBox="0 0 24 24" class="type-icon" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  };
 
   const tileEls = {};
 
@@ -41,10 +102,11 @@
       const tile = document.createElement("div");
       tile.className = "channel-tile";
       tile.style.setProperty("--tile-color", cfg.color);
+      const icon = TYPE_ICONS[cfg.type] || "";
       tile.innerHTML = `
         <div>
           <div class="label">${cfg.label}</div>
-          <div class="type">${cfg.type}</div>
+          <div class="type">${icon}<span>${cfg.type}</span></div>
         </div>
         <div class="note">–</div>
       `;
@@ -58,6 +120,14 @@
     if (!tile) return;
     tile.classList.toggle("active", on);
     tile.querySelector(".note").textContent = on ? noteName(midiNote) : "–";
+    if (on) {
+      // Riavvia l'animazione dell'anello (modalita' vivace) anche su
+      // trigger ravvicinati: si toglie e si rimette la classe a un frame
+      // di distanza, altrimenti il browser non la considera "nuova".
+      tile.classList.remove("pulse");
+      void tile.offsetWidth; // forza il reflow
+      tile.classList.add("pulse");
+    }
   }
 
   function noteName(midiNote) {
@@ -174,19 +244,12 @@
     setTileActive(channel, null, false);
   }
 
-  // Una "tavoletta" suona un colpo breve e si ferma da sola (one-shot),
-  // niente da tenere premuto.
-  function playOneShot(channel, cfg) {
-    triggerNote(channel, cfg, cfg.note);
-    setTimeout(() => {
-      if (!cfg.sample) stopVoice(channel, 0.2);
-      setTileActive(channel, cfg.note, false);
-    }, 180);
-  }
-
   // ---------------------------------------------------------------------
   // Logica "raggio": quantizza un valore continuo (0-127) su una nota
   // della scala configurata — stesso principio delle Divisions Soundbeam.
+  // trigger "retrigger" (default): nuova division -> nuova nota, rilascio
+  // -> silenzio. trigger "latching": nuova division -> nuova nota, ma il
+  // rilascio NON interrompe il suono (resta finche' non cambia division).
   // ---------------------------------------------------------------------
 
   function quantizeToScale(value0to127, scale) {
@@ -208,9 +271,43 @@
   function handleRaggioRelease(channel) {
     const cfg = MAPPING.channels[channel];
     const state = channelState[channel];
+    if (cfg && cfg.trigger === "latching") return; // resta acceso finche' non cambia division
     state.lastDivision = null;
     state.activeNote = null;
     releaseNote(channel, cfg || {});
+  }
+
+  // ---------------------------------------------------------------------
+  // Logica "tavoletta": trigger "oneshot" (default) = sempre la stessa
+  // nota, colpo breve. "sequence" = avanza di una nota nella scala a ogni
+  // pressione (come le tavolette Soundbeam, che condividono il motore
+  // Pitch Sequence dei beam). "latching" = ogni pressione accende/spegne
+  // una nota sostenuta.
+  // ---------------------------------------------------------------------
+
+  function playOneShot(channel, cfg) {
+    const mode = cfg.trigger || "oneshot";
+
+    if (mode === "latching") {
+      const state = channelState[channel];
+      state.latchedOn = !state.latchedOn;
+      if (state.latchedOn) triggerNote(channel, cfg, cfg.note);
+      else releaseNote(channel, cfg);
+      return;
+    }
+
+    let note = cfg.note;
+    if (mode === "sequence" && Array.isArray(cfg.scale) && cfg.scale.length > 0) {
+      const state = channelState[channel];
+      note = cfg.scale[state.sequenceIndex % cfg.scale.length];
+      state.sequenceIndex += 1;
+    }
+
+    triggerNote(channel, cfg, note);
+    setTimeout(() => {
+      if (!cfg.sample) stopVoice(channel, 0.2);
+      setTileActive(channel, note, false);
+    }, 180);
   }
 
   // ---------------------------------------------------------------------
@@ -299,15 +396,15 @@
   // ---------------------------------------------------------------------
 
   function initKeyboardSimulation() {
-    const { raggioChannel, raggioKeys, tavolette } = MAPPING.testKeyboard;
-    const raggioCfg = MAPPING.channels[raggioChannel];
-
     document.addEventListener("keydown", (e) => {
       ensureAudioContext();
       if (e.repeat) return;
 
+      const { raggioChannel, raggioKeys, tavolette } = PRESETS.testKeyboard;
+      const raggioCfg = MAPPING.channels[raggioChannel];
+
       const keyIndex = raggioKeys.indexOf(e.key);
-      if (keyIndex !== -1) {
+      if (keyIndex !== -1 && raggioCfg) {
         // ogni tasto simula una "division" del raggio, come muoversi lungo un beam
         const note = raggioCfg.scale[keyIndex % raggioCfg.scale.length];
         channelState[raggioChannel].lastDivision = keyIndex;
@@ -318,11 +415,12 @@
       const tavoletta = tavolette.find((t) => t.key === e.key);
       if (tavoletta) {
         const cfg = MAPPING.channels[tavoletta.channel];
-        playOneShot(tavoletta.channel, cfg);
+        if (cfg) playOneShot(tavoletta.channel, cfg);
       }
     });
 
     document.addEventListener("keyup", (e) => {
+      const { raggioChannel, raggioKeys } = PRESETS.testKeyboard;
       const keyIndex = raggioKeys.indexOf(e.key);
       if (keyIndex !== -1) handleRaggioRelease(raggioChannel);
     });
@@ -448,7 +546,9 @@
   }
 
   // Lo switch sulla Mega si comporta come una tavoletta: un colpo solo
-  // alla pressione, il rilascio ("S:0") non fa suonare nulla.
+  // alla pressione, il rilascio ("S:0") non fa suonare nulla (tranne che
+  // in modalita' "latching", dove il rilascio e' comunque ignorato: solo
+  // la pressione conta).
   function handleSerialSwitch(line) {
     const cfg = MAPPING.channels.switchSeriale;
     if (!cfg) return;
@@ -498,10 +598,59 @@
   }
 
   // ---------------------------------------------------------------------
+  // Feedback vivace/sobrio: in piu' al riempimento colore (sempre attivo,
+  // istantaneo), la modalita' vivace aggiunge un anello che si espande dal
+  // centro del riquadro a ogni trigger (vedi @keyframes pulse-ring in
+  // style.css). Di default spento: alcuni pazienti hanno sensibilita'
+  // sensoriale diversa, e' l'educatore ad attivarlo consapevolmente per la
+  // sessione. Stesso schema di persistenza di "Modalita' tecnica" sopra.
+  // ---------------------------------------------------------------------
 
-  buildStage();
+  function initFeedbackToggle() {
+    const button = document.getElementById("feedbackToggle");
+    if (!button) return;
+
+    let vivace = false;
+    try {
+      vivace = localStorage.getItem("pluto-feedback-vivace") === "1";
+    } catch (err) {
+      // storage non disponibile: si parte da sobrio
+    }
+
+    function apply() {
+      document.body.classList.toggle("feedback-vivace", vivace);
+      button.setAttribute("aria-pressed", String(vivace));
+      button.classList.toggle("status-button--active", vivace);
+      button.textContent = vivace ? "Feedback vivace" : "Feedback sobrio";
+    }
+
+    button.addEventListener("click", () => {
+      vivace = !vivace;
+      apply();
+      try {
+        localStorage.setItem("pluto-feedback-vivace", vivace ? "1" : "0");
+      } catch (err) {
+        // ignorato: la preferenza semplicemente non viene ricordata
+      }
+    });
+
+    apply();
+  }
+
+  // ---------------------------------------------------------------------
+
+  let savedPresetId = null;
+  try {
+    savedPresetId = localStorage.getItem(PRESET_STORAGE_KEY);
+  } catch (err) {
+    // storage non disponibile: si parte dal preset di default
+  }
+
+  initPresetSelector();
+  setPreset(savedPresetId);
   initWebMidi();
   initKeyboardSimulation();
   initRadarSerial();
   initTechToggle();
+  initFeedbackToggle();
 })();
