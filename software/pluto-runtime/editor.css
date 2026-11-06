@@ -55,15 +55,6 @@
   min-height: 1.2em;
 }
 
-.editor-warning {
-  margin: 0 28px 12px;
-  padding: 10px 16px;
-  background: #fdeee3;
-  border: 1px solid #f2c9a3;
-  border-radius: 12px;
-  color: #a6440f;
-}
-
 .editor-layout {
   display: flex;
   gap: 20px;

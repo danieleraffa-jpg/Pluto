@@ -43,8 +43,6 @@ Pagina separata, **non raggiungibile dall'app che usa l'educatore** (nessun link
 
 Permette di creare/duplicare/rinominare/eliminare preset e modificare ogni canale (etichetta, modalità di trigger, note/scala, campione audio, forma d'onda, colore, icona) con un modulo visuale e un pulsante "▶ Prova" per sentire subito il risultato — senza aprire `mapping.js`. Il salvataggio scrive direttamente su `config/mapping.js` (via File System Access API, Chrome/Edge desktop) oppure propone di scaricare il file aggiornato da spostare a mano dove serve. Per aggiungere un suono nuovo va comunque copiato a mano il file `.wav` in `assets/samples/` — l'editor lo seleziona per nome, non carica ancora file audio direttamente.
 
-**Attenzione**: salvando da li', i commenti scritti a mano su singoli valori nel file (non quelli generali in cima, quelli restano) vengono rigenerati e si perdono.
-
 ## Cosa manca (prossimi passi)
 
 - Suoni veri al posto dei campioni segnaposto (scelti dal musicista) — basta sostituire i file in `assets/samples/`, l'infrastruttura per suonarli c'è già.
