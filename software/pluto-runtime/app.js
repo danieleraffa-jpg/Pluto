@@ -854,7 +854,21 @@
   function initStopAll() {
     const button = document.getElementById("stopAll");
     if (!button) return;
-    button.addEventListener("click", stopAll);
+    const originalText = button.textContent;
+    let resetTimer = null;
+
+    button.addEventListener("click", () => {
+      stopAll();
+      // Conferma visibile sul pulsante stesso: se in quel momento non c'era
+      // nessun riquadro acceso, i riquadri non cambiano affatto — senza
+      // questo testo non ci sarebbe alcun segno che il tocco sia stato
+      // recepito.
+      button.textContent = "Silenziato ✓";
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        button.textContent = originalText;
+      }, 900);
+    });
   }
 
   // ---------------------------------------------------------------------
