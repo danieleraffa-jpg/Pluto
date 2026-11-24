@@ -600,8 +600,10 @@
     if (!button) return;
 
     if (!("serial" in navigator)) {
-      button.textContent = "Seriale non supportata (usa Chrome/Edge)";
-      button.disabled = true;
+      // Su tablet (Chrome Android) Web Serial non sara' mai disponibile:
+      // niente da offrire su quel canale, quindi il bottone va nascosto
+      // del tutto invece di restare visibile e disabilitato per sempre.
+      button.hidden = true;
       return;
     }
 

@@ -43,6 +43,16 @@ Implicazioni per l'architettura:
 
 Vedi [`hardware/raggi/`](../hardware/raggi/) e [`hardware/tavolette-on-off/`](../hardware/tavolette-on-off/).
 
+## Sensori commerciali Soundbrenner — valutati come alternativa (24/11/2026)
+
+Su richiesta, verificato se i prodotti di soundbrenner.com (metronomi/controller indossabili con sensori) offrano qualcosa di utile per i "raggi" o le "tavolette", in alternativa a sensori custom + eobody III.
+
+- **Genki Wave** (anello MIDI, CHF 279-349) — sensore di movimento (accelerometro/giroscopio), riconosce 6 gesti della mano + 3 pulsanti, uscita Bluetooth MIDI. Concettualmente il più vicino ai "raggi" (gesto → valore continuo). Limiti: richiede un software-bridge proprietario ("Softwave") su **Mac/Windows** per convertire Bluetooth→MIDI, quindi incompatibile con l'obiettivo "tablet Android standalone, senza PC" già raggiunto per pluto-runtime (stesso tipo di limite già trovato con Web Serial su Chrome Android, vedi README principale). Una recensione reale lo conferma usabile da persone con disabilità motoria, ma richiede comunque di indossare l'anello e compiere gesti delle dita riconoscibili — meno robusto, per pazienti con motricità molto compromessa, di un FSR che risponde a una semplice stretta. Costo non banale se servono più unità.
+- **Playtron / TouchMe** (CHF 95-119) — sensori di tocco/conduttività (stile Makey Makey): collegati a oggetti conduttivi o al corpo, generano note MIDI al contatto via **USB**. Playtron arriva a 16 ingressi su un solo dispositivo. Ruolo equivalente alle tavolette (trigger binario), non ai raggi (nessun valore continuo graduabile). Non confermato se USB-MIDI class-compliant utilizzabile via USB-OTG su Android. Richiede che il paziente chiuda un contatto elettrico col proprio corpo — meno predicibile di uno switch meccanico tipo AbleNet già testato e funzionante.
+- **Pulse / Core 2 / Spark** (metronomi vibranti indossabili) — hanno un accelerometro interno (contapassi, tap-tempo) ma sono progettati come dispositivi di **output** (vibrazione a tempo): non espongono i dati sensore via MIDI o API a terzi, tutto resta nella loro app chiusa. Non utilizzabili come input.
+
+**Conclusione**: nessun prodotto Soundbrenner ha un'API/SDK aperta per leggere dati sensore grezzi — tutto passa per app o bridge proprietari. Nessuno supera in modo netto il percorso FSR/flex sensor + eobody III per i raggi e switch accessibili per le tavolette, già più economico, più robusto per pazienti fragili e parzialmente funzionante. Il Genki Wave resta l'unica opzione da ricordare per il futuro, solo se emergesse un paziente con motricità fine sufficiente e si accettasse di reintrodurre un PC come bridge.
+
 ## Domande aperte
 
 - Che tipo di sensore useranno i "raggi" per rilevare la presa/il movimento del paziente? (pressione, capacitivo, accelerometro, piegamento...) — da chiarire con CRAMS prima di progettare l'elettronica
