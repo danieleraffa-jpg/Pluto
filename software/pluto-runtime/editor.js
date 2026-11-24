@@ -97,6 +97,43 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
     return (octave + 1) * 12 + nameIndex;
   }
 
+  // Fader verticale generico (vedi .fader in style.css): stesso <input
+  // type="range"> di sempre, solo ruotato — usato per Volume e per le
+  // bande dell'equalizzatore nell'editor.
+  function buildFader(labelText, min, max, value, formatValue, onInput) {
+    const fader = document.createElement("div");
+    fader.className = "fader";
+
+    const label = document.createElement("span");
+    label.className = "fader__label";
+    label.textContent = labelText;
+
+    const track = document.createElement("div");
+    track.className = "fader__track";
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = String(min);
+    input.max = String(max);
+    input.value = String(value);
+    input.setAttribute("aria-label", labelText);
+    track.appendChild(input);
+
+    const valueEl = document.createElement("span");
+    valueEl.className = "fader__value";
+    valueEl.textContent = formatValue(value);
+
+    input.addEventListener("input", () => {
+      const v = Number(input.value);
+      valueEl.textContent = formatValue(v);
+      onInput(v);
+    });
+
+    fader.appendChild(label);
+    fader.appendChild(track);
+    fader.appendChild(valueEl);
+    return fader;
+  }
+
   function initEditor() {
     const PRESETS = window.PLUTO_PRESETS;
     let currentPresetId = PRESETS.defaultPreset;
@@ -501,29 +538,6 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       if (typeof cfg.eqMid !== "number") cfg.eqMid = 0;
       if (typeof cfg.eqHigh !== "number") cfg.eqHigh = 0;
 
-      const volumeRow = document.createElement("div");
-      volumeRow.className = "note-add";
-      const volumeInput = document.createElement("input");
-      volumeInput.type = "range";
-      volumeInput.min = "0";
-      volumeInput.max = "100";
-      volumeInput.value = String(Math.round(cfg.volume * 100));
-      const volumeValue = document.createElement("span");
-      volumeValue.className = "note-chip";
-      volumeValue.textContent = `${volumeInput.value}%`;
-      volumeInput.addEventListener("input", () => {
-        cfg.volume = Number(volumeInput.value) / 100;
-        volumeValue.textContent = `${volumeInput.value}%`;
-        markDirty();
-      });
-      volumeRow.appendChild(volumeInput);
-      volumeRow.appendChild(volumeValue);
-      const volumeField = document.createElement("div");
-      volumeField.className = "field";
-      volumeField.innerHTML = "<label>Volume canale (mix di base)</label>";
-      volumeField.appendChild(volumeRow);
-      channelForm.appendChild(volumeField);
-
       // Muto: parte silenziato di default (restano colori/feedback visivo)
       const mutedLabel = document.createElement("label");
       mutedLabel.className = "note-add";
@@ -569,38 +583,40 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       panField.appendChild(panRow);
       channelForm.appendChild(panField);
 
-      // Equalizzatore (bassi/medi/alti): smussa o caratterizza il suono di
-      // questo canale, in dB. Solo qui — niente ritocco "al momento"
-      // equivalente nel mixer dell'app, e' una scelta di preparazione.
+      // Volume ed equalizzatore (bassi/medi/alti): raggruppati in una
+      // striscia di fader verticali, in stile console audio — stessa
+      // logica di sempre (volume 0-1, EQ in dB), cambia solo l'aspetto.
+      // Il Pan resta sopra come slider orizzontale: e' un bilanciamento
+      // sinistra/destra, non un livello, e orizzontale lo rende piu'
+      // leggibile.
+      const faderStripGroup = document.createElement("div");
+      const faderStripLabel = document.createElement("span");
+      faderStripLabel.className = "fader-strip-group__label";
+      faderStripLabel.textContent = "Mix di base (volume ed equalizzatore)";
+      const faderStrip = document.createElement("div");
+      faderStrip.className = "fader-strip";
+      faderStrip.appendChild(
+        buildFader("Volume", 0, 100, Math.round(cfg.volume * 100), (v) => `${v}%`, (v) => {
+          cfg.volume = v / 100;
+          markDirty();
+        })
+      );
       const eqBands = [
-        ["eqLow", "Bassi (EQ)"],
-        ["eqMid", "Medi (EQ)"],
-        ["eqHigh", "Alti (EQ)"],
+        ["eqLow", "Bassi"],
+        ["eqMid", "Medi"],
+        ["eqHigh", "Alti"],
       ];
       for (const [field, labelText] of eqBands) {
-        const eqRow = document.createElement("div");
-        eqRow.className = "note-add";
-        const eqInput = document.createElement("input");
-        eqInput.type = "range";
-        eqInput.min = "-12";
-        eqInput.max = "12";
-        eqInput.value = String(cfg[field]);
-        const eqValue = document.createElement("span");
-        eqValue.className = "note-chip";
-        eqValue.textContent = `${cfg[field] > 0 ? "+" : ""}${cfg[field]} dB`;
-        eqInput.addEventListener("input", () => {
-          cfg[field] = Number(eqInput.value);
-          eqValue.textContent = `${cfg[field] > 0 ? "+" : ""}${cfg[field]} dB`;
-          markDirty();
-        });
-        eqRow.appendChild(eqInput);
-        eqRow.appendChild(eqValue);
-        const eqField = document.createElement("div");
-        eqField.className = "field";
-        eqField.innerHTML = `<label>${labelText}</label>`;
-        eqField.appendChild(eqRow);
-        channelForm.appendChild(eqField);
+        faderStrip.appendChild(
+          buildFader(labelText, -12, 12, cfg[field], (v) => `${v > 0 ? "+" : ""}${v} dB`, (v) => {
+            cfg[field] = v;
+            markDirty();
+          })
+        );
       }
+      faderStripGroup.appendChild(faderStripLabel);
+      faderStripGroup.appendChild(faderStrip);
+      channelForm.appendChild(faderStripGroup);
 
       // Prova
       const previewRow = document.createElement("div");

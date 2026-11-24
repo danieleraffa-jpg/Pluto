@@ -395,6 +395,93 @@ body.feedback-vivace .channel-tile.pulse::after {
   font-variant-numeric: tabular-nums;
 }
 
+.mixer-row__body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mixer-row__body .mixer-slider-row {
+  flex: 1;
+}
+
+/* Fader verticale in stile "mixer da studio" (vedi screenshot condiviso in
+   chat): stesso <input type="range"> di sempre, solo ruotato — nessuna
+   logica diversa, cambia solo l'aspetto. Usato per Volume (app ed editor) e
+   per l'equalizzatore (solo editor): controlli di "livello", dove un
+   movimento verso l'alto = valore piu' alto e' intuitivo. Il Pan resta
+   orizzontale di proposito: e' un bilanciamento sinistra/destra, non un
+   livello, e l'orientamento orizzontale lo rappresenta meglio. */
+.fader-strip-group__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fader-strip {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.fader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 64px;
+}
+
+.fader__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.fader__track {
+  height: 130px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fader__track input[type="range"] {
+  width: 130px;
+  height: 24px;
+  margin: 0;
+  transform: rotate(-90deg);
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.fader__value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Variante piu' compatta per il pannello Mixer canali dell'app (piu'
+   canali visibili insieme, meno spazio verticale a disposizione). */
+.fader--compact {
+  width: 56px;
+}
+
+.fader--compact .fader__track {
+  height: 80px;
+}
+
+.fader--compact .fader__track input[type="range"] {
+  width: 80px;
+}
+
 #midiLog {
   margin-top: 10px;
   max-height: 160px;

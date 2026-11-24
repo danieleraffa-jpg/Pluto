@@ -928,16 +928,20 @@
           <button type="button" class="mixer-mini-btn" data-role="mute" aria-pressed="${baseMuted}">Muto</button>
           <button type="button" class="mixer-mini-btn" data-role="solo" aria-pressed="false">Solo</button>
         </div>
-        <label class="mixer-slider-row">
-          <span class="mixer-slider-row__label">Volume</span>
-          <input type="range" min="0" max="100" value="${Math.round(baseVolume * 100)}" aria-label="Volume ${cfg.label}" />
-          <span class="mixer-slider-row__value" data-role="volumeValue">${Math.round(baseVolume * 100)}%</span>
-        </label>
-        <label class="mixer-slider-row">
-          <span class="mixer-slider-row__label">Pan</span>
-          <input type="range" min="-100" max="100" value="${Math.round(basePan * 100)}" aria-label="Pan ${cfg.label}" />
-          <span class="mixer-slider-row__value" data-role="panValue">${panLabel(basePan)}</span>
-        </label>
+        <div class="mixer-row__body">
+          <div class="fader fader--compact">
+            <span class="fader__label">Volume</span>
+            <div class="fader__track">
+              <input type="range" min="0" max="100" value="${Math.round(baseVolume * 100)}" aria-label="Volume ${cfg.label}" />
+            </div>
+            <span class="fader__value" data-role="volumeValue">${Math.round(baseVolume * 100)}%</span>
+          </div>
+          <label class="mixer-slider-row">
+            <span class="mixer-slider-row__label">Pan</span>
+            <input type="range" min="-100" max="100" value="${Math.round(basePan * 100)}" aria-label="Pan ${cfg.label}" />
+            <span class="mixer-slider-row__value" data-role="panValue">${panLabel(basePan)}</span>
+          </label>
+        </div>
       `;
 
       const muteBtn = row.querySelector('[data-role="mute"]');
