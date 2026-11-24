@@ -891,6 +891,37 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       if (dirty) e.preventDefault();
     });
 
+    // "Torna a Pluto" con modifiche non salvate: niente window.confirm() o
+    // il solo beforeunload nativo (vedi stesso motivo di initCloseButton
+    // piu' sotto) — nella WebView dell'app Android, senza un
+    // WebChromeClient configurato, quel dialogo non si vede affatto: il
+    // click sul link sembrerebbe non fare nulla. Qui intercettiamo noi il
+    // click e mostriamo un overlay nostro, solo se ci sono modifiche.
+    function initBackLink() {
+      const link = document.getElementById("backToPlutoLink");
+      const overlay = document.getElementById("leaveConfirm");
+      const yesButton = document.getElementById("leaveConfirmYes");
+      const noButton = document.getElementById("leaveConfirmNo");
+      if (!link || !overlay || !yesButton || !noButton) return;
+
+      link.addEventListener("click", (e) => {
+        if (!dirty) return; // nessuna modifica in sospeso: naviga normalmente
+        e.preventDefault();
+        overlay.hidden = false;
+      });
+      noButton.addEventListener("click", () => {
+        overlay.hidden = true;
+      });
+      yesButton.addEventListener("click", () => {
+        // Azzera "dirty" prima di navigare: altrimenti il listener
+        // beforeunload qui sopra scatterebbe di nuovo sulla navigazione
+        // vera e propria, bloccandola di nuovo per lo stesso motivo (niente
+        // WebChromeClient nella WebView dell'app per mostrarlo).
+        dirty = false;
+        window.location.href = "index.html";
+      });
+    }
+
     // --- Chiudi app: visibile solo dentro il wrapper Android -------------
     // (window.PlutoApp, vedi app.js per gli stessi dettagli). Qui in piu'
     // il messaggio di conferma avvisa se ci sono modifiche non salvate.
@@ -927,6 +958,7 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
     renderChannelTabs();
     renderChannelForm();
     initCloseButton();
+    initBackLink();
   }
 
   initLock();
