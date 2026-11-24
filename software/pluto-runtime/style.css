@@ -332,39 +332,6 @@ main#stage {
 
 .channel-tile.active .icon-emoji { opacity: 1; filter: none; }
 
-/* Modalita' "Feedback vivace" (opt-in, vedi initFeedbackToggle in app.js):
-   in piu' al riempimento colore (sempre attivo e istantaneo, non dipende
-   da questa modalita'), un anello si espande e sfuma dal centro del
-   riquadro a ogni trigger. Spento di default: alcuni pazienti hanno
-   sensibilita' sensoriale diversa, il movimento extra va attivato apposta. */
-.channel-tile::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 40%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 3px solid var(--tile-color);
-  opacity: 0;
-  pointer-events: none;
-}
-
-body.feedback-vivace .channel-tile.pulse::after {
-  animation: pulse-ring 500ms ease-out;
-}
-
-@keyframes pulse-ring {
-  from {
-    opacity: 0.55;
-    transform: scale(0.4);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.8);
-  }
-}
-
 .debug-panel,
 .mixer-panel {
   padding: 0 28px 24px;

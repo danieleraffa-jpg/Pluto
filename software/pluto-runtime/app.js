@@ -151,14 +151,6 @@
     if (!tile) return;
     tile.classList.toggle("active", on);
     tile.querySelector(".note").textContent = on ? noteName(midiNote) : "–";
-    if (on) {
-      // Riavvia l'animazione dell'anello (modalita' vivace) anche su
-      // trigger ravvicinati: si toglie e si rimette la classe a un frame
-      // di distanza, altrimenti il browser non la considera "nuova".
-      tile.classList.remove("pulse");
-      void tile.offsetWidth; // forza il reflow
-      tile.classList.add("pulse");
-    }
   }
 
   function noteName(midiNote) {
@@ -766,46 +758,6 @@
   }
 
   // ---------------------------------------------------------------------
-  // Feedback vivace/sobrio: in piu' al riempimento colore (sempre attivo,
-  // istantaneo), la modalita' vivace aggiunge un anello che si espande dal
-  // centro del riquadro a ogni trigger (vedi @keyframes pulse-ring in
-  // style.css). Di default spento: alcuni pazienti hanno sensibilita'
-  // sensoriale diversa, e' l'educatore ad attivarlo consapevolmente per la
-  // sessione. Stesso schema di persistenza di "Modalita' tecnica" sopra.
-  // ---------------------------------------------------------------------
-
-  function initFeedbackToggle() {
-    const button = document.getElementById("feedbackToggle");
-    if (!button) return;
-
-    let vivace = false;
-    try {
-      vivace = localStorage.getItem("pluto-feedback-vivace") === "1";
-    } catch (err) {
-      // storage non disponibile: si parte da sobrio
-    }
-
-    function apply() {
-      document.body.classList.toggle("feedback-vivace", vivace);
-      button.setAttribute("aria-pressed", String(vivace));
-      button.classList.toggle("status-button--active", vivace);
-      button.textContent = vivace ? "Feedback vivace" : "Feedback sobrio";
-    }
-
-    button.addEventListener("click", () => {
-      vivace = !vivace;
-      apply();
-      try {
-        localStorage.setItem("pluto-feedback-vivace", vivace ? "1" : "0");
-      } catch (err) {
-        // ignorato: la preferenza semplicemente non viene ricordata
-      }
-    });
-
-    apply();
-  }
-
-  // ---------------------------------------------------------------------
   // Gesto nascosto per raggiungere l'editor dei preset (editor.html) senza
   // dover conoscere/scrivere l'indirizzo a mano: 5 tocchi rapidi sul logo
   // "Pluto" nell'header. Nessun pulsante visibile apposta — l'editor non e'
@@ -1104,7 +1056,6 @@
   initKeyboardSimulation();
   initRadarSerial();
   initTechToggle();
-  initFeedbackToggle();
   initMixerToggle();
   initStopAll();
   initVolumeControl();
