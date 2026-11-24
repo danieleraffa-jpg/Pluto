@@ -121,35 +121,60 @@ h1 {
 .status.ok { color: #1f8a53; }
 .status.warn { color: #b5790a; }
 
+/* "Tasto fisico": un rilievo sotto (il "bordo" piu' scuro, simile alla
+   base su cui poggia un vero pulsante) piu' un'ombra ambientale per la
+   profondita'. Alla pressione (:active) o se resta impegnato (--active,
+   vedi Muto/Solo/Modalita' tecnica ecc.) il rilievo si assottiglia e il
+   tasto scende, come se affondasse davvero nella sua sede. */
 .status-button {
   font: inherit;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text);
-  background: var(--panel);
+  background: linear-gradient(to bottom, #ffffff, var(--panel-soft));
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 10px 18px;
   min-height: 44px; /* dimensione comoda per il tocco, non solo per il mouse */
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(43, 36, 64, 0.06);
-  transition: background-color 120ms ease, transform 80ms ease;
+  box-shadow: 0 3px 0 var(--border), 0 4px 8px rgba(43, 36, 64, 0.12);
+  transition: background-color 120ms ease, transform 80ms ease, box-shadow 80ms ease;
 }
 
-.status-button:hover:not(:disabled) { background: var(--panel-soft); }
-.status-button:active:not(:disabled) { transform: scale(0.97); }
-.status-button:disabled { color: var(--muted); cursor: default; }
+.status-button:hover:not(:disabled) { background: linear-gradient(to bottom, #ffffff, var(--panel)); }
+
+.status-button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--border), 0 1px 2px rgba(43, 36, 64, 0.12);
+}
+
+.status-button:disabled { color: var(--muted); cursor: default; box-shadow: none; }
 
 .status-button--ghost {
   background: transparent;
   color: var(--muted);
+  border-color: transparent;
   box-shadow: none;
 }
 
+.status-button--ghost:hover:not(:disabled) {
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+.status-button--ghost:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* Impegnato (es. "Mixer canali" aperto): resta visivamente "premuto", non
+   solo colorato diverso — un'ombra interna al posto del rilievo esterno. */
 .status-button--ghost.status-button--active {
   color: var(--accent);
   border-color: var(--accent);
   background: #f2ecfc;
+  box-shadow: inset 0 1px 3px rgba(124, 79, 214, 0.35);
+  transform: translateY(1px);
 }
 
 /* "Silenzia tutto": un pulsante di sicurezza, colorato apposta per
@@ -157,11 +182,16 @@ h1 {
    attivare/disattivare come gli altri, e' un'azione immediata). */
 .status-button--warn {
   color: #a6440f;
-  background: #fdeee3;
+  background: linear-gradient(to bottom, #fdeee3, #fbe0cc);
   border-color: #f2c9a3;
+  box-shadow: 0 3px 0 #f2c9a3, 0 4px 8px rgba(166, 68, 15, 0.15);
 }
 
-.status-button--warn:hover:not(:disabled) { background: #fbe0cc; }
+.status-button--warn:hover:not(:disabled) { background: linear-gradient(to bottom, #fdeee3, #f7d4b0); }
+
+.status-button--warn:active:not(:disabled) {
+  box-shadow: 0 0 0 #f2c9a3, 0 1px 2px rgba(166, 68, 15, 0.15);
+}
 
 main#stage {
   flex: 1;
@@ -347,24 +377,39 @@ body.feedback-vivace .channel-tile.pulse::after {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--muted);
-  background: var(--panel);
+  background: linear-gradient(to bottom, #ffffff, var(--panel-soft));
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 5px 14px;
   min-height: 32px;
   cursor: pointer;
+  box-shadow: 0 2px 0 var(--border), 0 3px 5px rgba(43, 36, 64, 0.12);
+  transition: background-color 120ms ease, transform 80ms ease, box-shadow 80ms ease;
 }
 
+.mixer-mini-btn:hover { background: linear-gradient(to bottom, #ffffff, var(--panel)); }
+
+.mixer-mini-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--border);
+}
+
+/* Impegnato: il tasto resta "premuto" (ombra interna, non piu' in
+   rilievo) oltre che acceso di colore — come un vero mute/solo da mixer. */
 .mixer-mini-btn--active[data-role="mute"] {
   color: #a6440f;
-  background: #fdeee3;
+  background: linear-gradient(to bottom, #fdeee3, #fbe0cc);
   border-color: #f2c9a3;
+  box-shadow: inset 0 1px 3px rgba(166, 68, 15, 0.3);
+  transform: translateY(2px);
 }
 
 .mixer-mini-btn--active[data-role="solo"] {
   color: var(--accent);
   background: #f2ecfc;
   border-color: var(--accent);
+  box-shadow: inset 0 1px 3px rgba(124, 79, 214, 0.35);
+  transform: translateY(2px);
 }
 
 .mixer-slider-row {
@@ -378,12 +423,6 @@ body.feedback-vivace .channel-tile.pulse::after {
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--muted);
-}
-
-.mixer-slider-row input[type="range"] {
-  flex: 1;
-  accent-color: var(--accent);
-  cursor: pointer;
 }
 
 .mixer-slider-row__value {
@@ -531,6 +570,58 @@ body.feedback-vivace .channel-tile.pulse::after {
   font-weight: 700;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* Pan: la stessa scanalatura/maniglia del fader, ma orizzontale (niente
+   rotazione) — condivisa tra il mixer dell'app e l'editor del musicista,
+   cosi' lo stile resta identico ovunque. */
+.pan-slider {
+  flex: 1 1 160px;
+  min-width: 120px;
+  height: 28px;
+  margin: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.pan-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #241d38, #3a3254);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.pan-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #241d38, #3a3254);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.pan-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 28px;
+  margin-top: -10px;
+  border-radius: 3px;
+  border: 1px solid #4a3f72;
+  background:
+    linear-gradient(to bottom, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
+    linear-gradient(to bottom, #5f3aa8, #9b72e0, #5f3aa8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.pan-slider::-moz-range-thumb {
+  width: 14px;
+  height: 28px;
+  border-radius: 3px;
+  border: 1px solid #4a3f72;
+  background:
+    linear-gradient(to bottom, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
+    linear-gradient(to bottom, #5f3aa8, #9b72e0, #5f3aa8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* Variante piu' compatta per il pannello Mixer canali dell'app (piu'

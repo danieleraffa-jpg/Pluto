@@ -564,6 +564,7 @@ const UNLOCK_KEY = "pluto-editor-unlocked";
       panRow.className = "note-add";
       const panInput = document.createElement("input");
       panInput.type = "range";
+      panInput.className = "pan-slider";
       panInput.min = "-100";
       panInput.max = "100";
       panInput.value = String(Math.round(cfg.pan * 100));

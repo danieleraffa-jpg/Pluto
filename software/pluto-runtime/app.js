@@ -938,7 +938,7 @@
           </div>
           <label class="mixer-slider-row">
             <span class="mixer-slider-row__label">Pan</span>
-            <input type="range" min="-100" max="100" value="${Math.round(basePan * 100)}" aria-label="Pan ${cfg.label}" />
+            <input type="range" class="pan-slider" min="-100" max="100" value="${Math.round(basePan * 100)}" aria-label="Pan ${cfg.label}" />
             <span class="mixer-slider-row__value" data-role="panValue">${panLabel(basePan)}</span>
           </label>
         </div>
