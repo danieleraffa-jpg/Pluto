@@ -1,12 +1,16 @@
 :root {
   color-scheme: light;
-  --bg: #faf6ef;
+  --bg: #eef0f3;
   --panel: #ffffff;
-  --panel-soft: #f1ece0;
-  --text: #2b2440;
-  --muted: #756f8a;
-  --accent: #7c4fd6;
-  --border: #e6ded0;
+  --panel-soft: #e7e9ee;
+  --text: #1f2430;
+  --muted: #677085;
+  --accent: #3a5a99;
+  --accent-soft: #e5ecf6;
+  --border: #d7dce3;
+  --display-bg: #232831;
+  --display-text: #cdd6e3;
+  --display-border: #161a20;
 }
 
 * { box-sizing: border-box; }
@@ -26,20 +30,29 @@ body {
   flex-direction: column;
   color: var(--text);
   font-family: "Segoe UI", system-ui, -apple-system, "Noto Sans", sans-serif;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% -10%, #fde8d6, transparent),
-    radial-gradient(ellipse 60% 45% at 100% 0%, #e3f1ea, transparent),
-    var(--bg);
+  background: var(--bg);
   -webkit-tap-highlight-color: transparent;
 }
 
 header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 20px 28px;
+}
+
+/* Titolo + controlli principali: wrappano insieme su schermi stretti. I
+   controlli di finestra (Chiudi/Torna) stanno in un gruppo separato (vedi
+   .window-controls), ancorato sempre in alto a destra, cosi' non si
+   spostano quando questo gruppo va a capo. */
+.header-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 h1 {
@@ -50,7 +63,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #221c38;
+  color: var(--text);
 }
 
 .title-mark { width: 1.4em; height: 1.4em; flex-shrink: 0; }
@@ -62,6 +75,15 @@ h1 {
   gap: 10px;
 }
 
+/* Come una barra del titolo di un programma a finestra: Chiudi (e, nell'
+   editor, Torna a Pluto) restano sempre nell'angolo in alto a destra,
+   mai dentro al flusso di .status-group che puo' andare a capo. */
+.window-controls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .preset-picker {
   display: flex;
   align-items: center;
@@ -69,11 +91,11 @@ h1 {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--muted);
-  background: var(--panel);
+  background: linear-gradient(to bottom, #ffffff, var(--panel-soft));
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 6px 16px 6px 18px;
-  box-shadow: 0 2px 6px rgba(43, 36, 64, 0.06);
+  box-shadow: 0 2px 0 var(--border), 0 3px 6px rgba(31, 36, 48, 0.1);
 }
 
 .preset-picker select {
@@ -95,31 +117,39 @@ h1 {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--muted);
-  background: var(--panel);
+  background: linear-gradient(to bottom, #ffffff, var(--panel-soft));
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 6px 18px;
-  box-shadow: 0 2px 6px rgba(43, 36, 64, 0.06);
+  box-shadow: 0 2px 0 var(--border), 0 3px 6px rgba(31, 36, 48, 0.1);
 }
 
-.volume-control input[type="range"] {
-  accent-color: var(--accent);
-  cursor: pointer;
+.volume-control .pan-slider {
   width: 110px;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
-.status {
-  font-size: 0.85rem;
+/* Display di sola lettura (stato, non un controllo): incassato e scuro,
+   come il quadrante di uno strumento — ben distinto dai pulsanti/slider
+   in rilievo, cosi' si capisce a colpo d'occhio cosa si puo' toccare e
+   cosa invece e' solo un'informazione. */
+.status,
+#radarConnect:disabled {
+  font-family: "Consolas", "SF Mono", monospace;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: var(--muted);
+  letter-spacing: 0.01em;
+  color: var(--display-text);
   padding: 10px 16px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--display-bg);
+  border: 1px solid var(--display-border);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-.status.ok { color: #1f8a53; }
-.status.warn { color: #b5790a; }
+.status.ok { color: #7fd9a0; }
+.status.warn { color: #e0b15c; }
 
 /* "Tasto fisico": un rilievo sotto (il "bordo" piu' scuro, simile alla
    base su cui poggia un vero pulsante) piu' un'ombra ambientale per la
@@ -133,7 +163,7 @@ h1 {
   color: var(--text);
   background: linear-gradient(to bottom, #ffffff, var(--panel-soft));
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 10px 18px;
   min-height: 44px; /* dimensione comoda per il tocco, non solo per il mouse */
   cursor: pointer;
@@ -172,8 +202,8 @@ h1 {
 .status-button--ghost.status-button--active {
   color: var(--accent);
   border-color: var(--accent);
-  background: #f2ecfc;
-  box-shadow: inset 0 1px 3px rgba(124, 79, 214, 0.35);
+  background: var(--accent-soft);
+  box-shadow: inset 0 1px 3px rgba(58, 90, 153, 0.35);
   transform: translateY(1px);
 }
 
@@ -205,26 +235,27 @@ main#stage {
 
 .channel-tile {
   background: var(--panel);
-  border-radius: 24px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px 22px;
   min-height: 180px;
   flex: 1 1 260px;
   max-width: 340px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* Bordo gia' tinto del colore del canale anche a riposo (non solo da
-     attivo): e' quello che fa vedere a colpo d'occhio che un preset e'
-     cambiato, senza dover toccare nulla per sentirne la differenza. */
-  border: 3px solid color-mix(in srgb, var(--tile-color) 35%, var(--border));
-  box-shadow: 0 6px 18px rgba(43, 36, 64, 0.08);
+  /* Il colore del canale e' una sottile barra in alto, come l'etichetta
+     di un canale su un mixer — non un bordo intero: basta per riconoscere
+     il canale a colpo d'occhio senza colorare tutto il riquadro. */
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--tile-color);
+  box-shadow: 0 2px 10px rgba(20, 24, 32, 0.06);
   position: relative;
   overflow: hidden;
   cursor: pointer; /* "tocca per provare", vedi previewChannel in app.js */
   transition: border-color 80ms linear, box-shadow 80ms linear, transform 150ms ease, background-color 80ms linear;
 }
 
-.channel-tile:hover { box-shadow: 0 8px 22px rgba(43, 36, 64, 0.12); }
+.channel-tile:hover { box-shadow: 0 4px 16px rgba(20, 24, 32, 0.1); }
 .channel-tile:active { transform: scale(0.98); }
 
 .channel-tile__top {
@@ -235,15 +266,16 @@ main#stage {
 }
 
 .icon-emoji {
-  font-size: 2rem;
+  font-size: 1.5rem;
   line-height: 1;
-  opacity: 0.8;
+  opacity: 0.75;
+  filter: grayscale(0.25);
 }
 
 .channel-tile .label {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  color: #221c38;
+  color: var(--text);
 }
 
 .channel-tile .type {
@@ -274,23 +306,31 @@ main#stage {
   transition: opacity 80ms linear, color 80ms linear;
 }
 
-/* .active viene aggiunta/rimossa via JS a ogni nota — e' il feedback visivo
-   immediato per il paziente: il riquadro si riempie col colore del canale */
+/* .active viene aggiunta/rimossa via JS a ogni nota — il feedback immediato
+   che un sensore e' stato attivato: un tint leggero del colore del canale,
+   un bordo piu' marcato e la nota in evidenza, senza riempire tutto il
+   riquadro di colore pieno. */
 .channel-tile.active {
-  background-color: var(--tile-color);
-  border-color: var(--tile-color);
-  box-shadow: 0 10px 28px color-mix(in srgb, var(--tile-color) 45%, transparent);
-  transform: scale(1.02);
+  background-color: color-mix(in srgb, var(--tile-color) 10%, var(--panel));
+  border-color: color-mix(in srgb, var(--tile-color) 55%, var(--border));
+  border-top-color: var(--tile-color);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--tile-color) 30%, transparent);
+  transform: scale(1.01);
 }
 
-.channel-tile.active .label,
-.channel-tile.active .type,
-.channel-tile.active .note {
-  color: #fff;
+.channel-tile.active .label { color: var(--text); }
+
+.channel-tile.active .type {
+  color: color-mix(in srgb, var(--tile-color) 65%, var(--muted));
   opacity: 1;
 }
 
-.channel-tile.active .icon-emoji { opacity: 1; }
+.channel-tile.active .note {
+  color: color-mix(in srgb, var(--tile-color) 80%, var(--text));
+  opacity: 1;
+}
+
+.channel-tile.active .icon-emoji { opacity: 1; filter: none; }
 
 /* Modalita' "Feedback vivace" (opt-in, vedi initFeedbackToggle in app.js):
    in piu' al riempimento colore (sempre attivo e istantaneo, non dipende
@@ -305,7 +345,7 @@ main#stage {
   width: 40%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 3px solid #fff;
+  border: 3px solid var(--tile-color);
   opacity: 0;
   pointer-events: none;
 }
@@ -335,14 +375,65 @@ body.feedback-vivace .channel-tile.pulse::after {
   padding: 16px 20px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
 }
 
 #midiMonitor h2,
-.mixer-panel h2 {
-  margin: 0 0 4px;
+.mixer-panel h2,
+.panel-header h2 {
+  margin: 0;
   font-size: 1rem;
 }
+
+/* Pulsante "i": apre/chiude la spiegazione del pannello (vedi
+   .info-popover), invece di tenerla sempre visibile come testo fisso. */
+.info-btn {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-soft);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.info-btn:hover { background: var(--border); }
+
+.info-btn[aria-pressed="true"] {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.info-popover {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.info-popover[hidden] { display: none; }
 
 .mixer-sliders {
   display: flex;
@@ -356,7 +447,7 @@ body.feedback-vivace .channel-tile.pulse::after {
   flex-direction: column;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: 10px;
   background: var(--panel-soft);
 }
 
@@ -379,7 +470,7 @@ body.feedback-vivace .channel-tile.pulse::after {
   color: var(--muted);
   background: linear-gradient(to bottom, #ffffff, var(--panel-soft));
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 5px 14px;
   min-height: 32px;
   cursor: pointer;
@@ -406,9 +497,9 @@ body.feedback-vivace .channel-tile.pulse::after {
 
 .mixer-mini-btn--active[data-role="solo"] {
   color: var(--accent);
-  background: #f2ecfc;
+  background: var(--accent-soft);
   border-color: var(--accent);
-  box-shadow: inset 0 1px 3px rgba(124, 79, 214, 0.35);
+  box-shadow: inset 0 1px 3px rgba(58, 90, 153, 0.35);
   transform: translateY(2px);
 }
 
@@ -527,14 +618,14 @@ body.feedback-vivace .channel-tile.pulse::after {
 .fader__track input[type="range"]::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(to bottom, #241d38, #3a3254);
+  background: linear-gradient(to bottom, #20242c, #333a46);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .fader__track input[type="range"]::-moz-range-track {
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(to bottom, #241d38, #3a3254);
+  background: linear-gradient(to bottom, #20242c, #333a46);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
@@ -547,10 +638,10 @@ body.feedback-vivace .channel-tile.pulse::after {
   height: 36px;
   margin-top: -14px;
   border-radius: 3px;
-  border: 1px solid #4a3f72;
+  border: 1px solid #2f333b;
   background:
     linear-gradient(to right, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
-    linear-gradient(to right, #5f3aa8, #9b72e0, #5f3aa8);
+    linear-gradient(to right, #4a4f58, #6b7280, #4a4f58);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -558,10 +649,10 @@ body.feedback-vivace .channel-tile.pulse::after {
   width: 14px;
   height: 36px;
   border-radius: 3px;
-  border: 1px solid #4a3f72;
+  border: 1px solid #2f333b;
   background:
     linear-gradient(to right, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
-    linear-gradient(to right, #5f3aa8, #9b72e0, #5f3aa8);
+    linear-gradient(to right, #4a4f58, #6b7280, #4a4f58);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -589,14 +680,14 @@ body.feedback-vivace .channel-tile.pulse::after {
 .pan-slider::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(to right, #241d38, #3a3254);
+  background: linear-gradient(to right, #20242c, #333a46);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .pan-slider::-moz-range-track {
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(to right, #241d38, #3a3254);
+  background: linear-gradient(to right, #20242c, #333a46);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
@@ -606,10 +697,10 @@ body.feedback-vivace .channel-tile.pulse::after {
   height: 28px;
   margin-top: -10px;
   border-radius: 3px;
-  border: 1px solid #4a3f72;
+  border: 1px solid #2f333b;
   background:
     linear-gradient(to bottom, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
-    linear-gradient(to bottom, #5f3aa8, #9b72e0, #5f3aa8);
+    linear-gradient(to bottom, #4a4f58, #6b7280, #4a4f58);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -617,10 +708,10 @@ body.feedback-vivace .channel-tile.pulse::after {
   width: 14px;
   height: 28px;
   border-radius: 3px;
-  border: 1px solid #4a3f72;
+  border: 1px solid #2f333b;
   background:
     linear-gradient(to bottom, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
-    linear-gradient(to bottom, #5f3aa8, #9b72e0, #5f3aa8);
+    linear-gradient(to bottom, #4a4f58, #6b7280, #4a4f58);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -654,8 +745,10 @@ body.feedback-vivace .channel-tile.pulse::after {
   overflow-y: auto;
   font-family: "Consolas", "SF Mono", monospace;
   font-size: 0.82rem;
-  color: #463e5e;
-  background: var(--panel-soft);
+  color: var(--display-text);
+  background: var(--display-bg);
+  border: 1px solid var(--display-border);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
   border-radius: 10px;
   padding: 8px 12px;
 }
@@ -667,7 +760,7 @@ body.feedback-vivace .channel-tile.pulse::after {
 
 #midiLog:empty::before {
   content: "In attesa di messaggi MIDI…";
-  color: var(--muted);
+  color: #6b7482;
 }
 
 footer {
@@ -694,7 +787,7 @@ footer {
 
 .close-confirm__box {
   background: var(--panel);
-  border-radius: 20px;
+  border-radius: 14px;
   padding: 28px;
   max-width: 340px;
   width: 100%;

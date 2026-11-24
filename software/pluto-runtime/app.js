@@ -1041,6 +1041,23 @@
   }
 
   // ---------------------------------------------------------------------
+  // Pulsante "i": mostra/nasconde la spiegazione di un pannello (Mixer
+  // canali, Monitor MIDI), invece di tenerla sempre visibile come testo
+  // fisso — meno ingombrante per chi il pannello lo conosce gia'.
+  // ---------------------------------------------------------------------
+
+  function initInfoToggle(buttonId, popoverId) {
+    const button = document.getElementById(buttonId);
+    const popover = document.getElementById(popoverId);
+    if (!button || !popover) return;
+    button.addEventListener("click", () => {
+      const shown = popover.hidden;
+      popover.hidden = !shown;
+      button.setAttribute("aria-pressed", String(shown));
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // Chiudi app: visibile solo dentro il wrapper Android (window.PlutoApp,
   // iniettato da MainActivity.kt), dove serve un modo comodo per uscire
   // dalla kiosk mode senza passare dal gesto nascosto nell'angolo. In un
@@ -1093,4 +1110,6 @@
   initVolumeControl();
   initEditorGesture();
   initCloseButton();
+  initInfoToggle("mixerInfoBtn", "mixerInfo");
+  initInfoToggle("midiInfoBtn", "midiInfo");
 })();

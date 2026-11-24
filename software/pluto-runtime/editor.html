@@ -35,22 +35,26 @@
 
   <div id="editorApp" class="editor-app" hidden>
     <header>
-      <h1>
-        <svg class="title-mark" viewBox="0 0 100 100" aria-hidden="true">
-          <ellipse cx="54" cy="54" rx="34" ry="9" fill="none" stroke="#E8A33D" stroke-width="7" transform="rotate(-20 54 54)" />
-          <circle cx="54" cy="54" r="21" fill="#7C4FD6" />
-        </svg>
-        Editor preset
-      </h1>
-      <div class="status-group">
-        <label class="preset-picker">
-          <span class="preset-picker__label">Preset</span>
-          <select id="presetSelect" aria-label="Preset in modifica"></select>
-        </label>
-        <button id="presetDuplicate" class="status-button">Duplica</button>
-        <button id="presetRename" class="status-button">Rinomina</button>
-        <button id="presetDelete" class="status-button status-button--warn">Elimina</button>
-        <button id="presetSetDefault" class="status-button status-button--ghost">Imposta come default</button>
+      <div class="header-main">
+        <h1>
+          <svg class="title-mark" viewBox="0 0 100 100" aria-hidden="true">
+            <ellipse cx="54" cy="54" rx="34" ry="9" fill="none" stroke="#E8A33D" stroke-width="7" transform="rotate(-20 54 54)" />
+            <circle cx="54" cy="54" r="21" fill="#7C4FD6" />
+          </svg>
+          Editor preset
+        </h1>
+        <div class="status-group">
+          <label class="preset-picker">
+            <span class="preset-picker__label">Preset</span>
+            <select id="presetSelect" aria-label="Preset in modifica"></select>
+          </label>
+          <button id="presetDuplicate" class="status-button">Duplica</button>
+          <button id="presetRename" class="status-button">Rinomina</button>
+          <button id="presetDelete" class="status-button status-button--warn">Elimina</button>
+          <button id="presetSetDefault" class="status-button status-button--ghost">Imposta come default</button>
+        </div>
+      </div>
+      <div class="window-controls">
         <a id="backToPlutoLink" href="index.html" class="status-button status-button--ghost">← Torna a Pluto</a>
         <button id="closeButton" class="status-button status-button--ghost" hidden>Chiudi app</button>
       </div>

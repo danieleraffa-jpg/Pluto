@@ -13,28 +13,32 @@
 <body>
 
   <header>
-    <h1>
-      <svg class="title-mark" viewBox="0 0 100 100" aria-hidden="true">
-        <ellipse cx="54" cy="54" rx="34" ry="9" fill="none" stroke="#E8A33D" stroke-width="7" transform="rotate(-20 54 54)" />
-        <circle cx="54" cy="54" r="21" fill="#7C4FD6" />
-      </svg>
-      Pluto
-    </h1>
-    <div class="status-group">
-      <label class="preset-picker">
-        <span class="preset-picker__label">Set di suoni</span>
-        <select id="presetSelect" aria-label="Set di suoni attivo"></select>
-      </label>
-      <label class="volume-control">
-        <span class="volume-control__label">Volume</span>
-        <input type="range" id="volumeSlider" min="0" max="100" value="80" aria-label="Volume generale" />
-      </label>
-      <button id="radarConnect" class="status-button">Collega sensore seriale</button>
-      <div id="midiStatus" class="status">MIDI: inizializzazione…</div>
-      <button id="feedbackToggle" class="status-button status-button--ghost" aria-pressed="false">Feedback sobrio</button>
-      <button id="techToggle" class="status-button status-button--ghost" aria-pressed="false">Modalità tecnica</button>
-      <button id="mixerToggle" class="status-button status-button--ghost" aria-pressed="false">Mixer canali</button>
-      <button id="stopAll" class="status-button status-button--warn">Silenzia tutto</button>
+    <div class="header-main">
+      <h1>
+        <svg class="title-mark" viewBox="0 0 100 100" aria-hidden="true">
+          <ellipse cx="54" cy="54" rx="34" ry="9" fill="none" stroke="#E8A33D" stroke-width="7" transform="rotate(-20 54 54)" />
+          <circle cx="54" cy="54" r="21" fill="#7C4FD6" />
+        </svg>
+        Pluto
+      </h1>
+      <div class="status-group">
+        <label class="preset-picker">
+          <span class="preset-picker__label">Set di suoni</span>
+          <select id="presetSelect" aria-label="Set di suoni attivo"></select>
+        </label>
+        <label class="volume-control">
+          <span class="volume-control__label">Volume</span>
+          <input type="range" id="volumeSlider" class="pan-slider" min="0" max="100" value="80" aria-label="Volume generale" />
+        </label>
+        <button id="radarConnect" class="status-button">Collega sensore seriale</button>
+        <div id="midiStatus" class="status">MIDI: inizializzazione…</div>
+        <button id="feedbackToggle" class="status-button status-button--ghost" aria-pressed="false">Feedback sobrio</button>
+        <button id="techToggle" class="status-button status-button--ghost" aria-pressed="false">Modalità tecnica</button>
+        <button id="mixerToggle" class="status-button status-button--ghost" aria-pressed="false">Mixer canali</button>
+        <button id="stopAll" class="status-button status-button--warn">Silenzia tutto</button>
+      </div>
+    </div>
+    <div class="window-controls">
       <button id="closeButton" class="status-button status-button--ghost" hidden>Chiudi app</button>
     </div>
   </header>
@@ -59,8 +63,11 @@
 
   <div id="mixerPanel" class="mixer-panel" hidden>
     <section>
-      <h2>Mixer canali</h2>
-      <p class="hint">
+      <div class="panel-header">
+        <h2>Mixer canali</h2>
+        <button type="button" id="mixerInfoBtn" class="info-btn" aria-pressed="false" aria-label="Informazioni su Mixer canali">i</button>
+      </div>
+      <p id="mixerInfo" class="info-popover" hidden>
         Volume, Muto, Solo e Pan per ogni sensore, per bilanciare il mix "al momento" (es. mentre si prova
         un brano) o isolare un canale con "Solo". Valido solo per questa sessione: si perde cambiando
         preset o ricaricando la pagina — per salvare Volume/Muto/Pan in modo permanente usa l'editor del
@@ -72,8 +79,11 @@
 
   <div id="debugPanel" class="debug-panel" hidden>
     <section id="midiMonitor">
-      <h2>Monitor MIDI grezzo</h2>
-      <p class="hint">
+      <div class="panel-header">
+        <h2>Monitor MIDI grezzo</h2>
+        <button type="button" id="midiInfoBtn" class="info-btn" aria-pressed="false" aria-label="Informazioni sul Monitor MIDI">i</button>
+      </div>
+      <p id="midiInfo" class="info-popover" hidden>
         Mostra ogni messaggio ricevuto, anche su canali non ancora configurati in <code>config/mapping.js</code>.
         Serve a scoprire su quale canale/numero manda davvero un jack dell'eobody collegandoci un sensore.
       </p>
