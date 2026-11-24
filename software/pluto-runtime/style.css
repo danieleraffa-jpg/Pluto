@@ -445,6 +445,7 @@ body.feedback-vivace .channel-tile.pulse::after {
 }
 
 .fader__track {
+  position: relative;
   height: 130px;
   width: 36px;
   display: flex;
@@ -452,13 +453,77 @@ body.feedback-vivace .channel-tile.pulse::after {
   justify-content: center;
 }
 
+/* Tacche di graduazione dietro la scanalatura, decorative (come su un
+   mixer vero) — una riga di trattini a intervalli regolari. */
+.fader__track::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  width: 14px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--border) 0,
+    var(--border) 1px,
+    transparent 1px,
+    transparent 13px
+  );
+  pointer-events: none;
+}
+
 .fader__track input[type="range"] {
-  width: 130px;
-  height: 24px;
+  width: 130px; /* diventa la lunghezza verticale dopo la rotazione */
+  height: 36px; /* diventa la larghezza orizzontale della maniglia */
   margin: 0;
   transform: rotate(-90deg);
-  accent-color: var(--accent);
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+/* Scanalatura incassata, non il trattino sottile di uno slider standard. */
+.fader__track input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #241d38, #3a3254);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.fader__track input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #241d38, #3a3254);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Maniglia larga, come il cursore di un fader vero — non il pallino di
+   uno slider standard: piu' stretta nel senso dello scorrimento, piu'
+   larga nell'altro, con una riga centrale che fa da "presa". */
+.fader__track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 36px;
+  margin-top: -14px;
+  border-radius: 3px;
+  border: 1px solid #4a3f72;
+  background:
+    linear-gradient(to right, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
+    linear-gradient(to right, #5f3aa8, #9b72e0, #5f3aa8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.fader__track input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 36px;
+  border-radius: 3px;
+  border: 1px solid #4a3f72;
+  background:
+    linear-gradient(to right, transparent 0%, transparent 42%, rgba(0, 0, 0, 0.35) 42%, rgba(0, 0, 0, 0.35) 58%, transparent 58%, transparent 100%),
+    linear-gradient(to right, #5f3aa8, #9b72e0, #5f3aa8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .fader__value {
@@ -480,6 +545,16 @@ body.feedback-vivace .channel-tile.pulse::after {
 
 .fader--compact .fader__track input[type="range"] {
   width: 80px;
+  height: 30px;
+}
+
+.fader--compact .fader__track input[type="range"]::-webkit-slider-thumb {
+  height: 30px;
+  margin-top: -11px;
+}
+
+.fader--compact .fader__track input[type="range"]::-moz-range-thumb {
+  height: 30px;
 }
 
 #midiLog {
